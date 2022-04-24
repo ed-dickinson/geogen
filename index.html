@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+<title>GeoGen</title>
+<meta charset="UTF-8">
+<meta name="keywords" content="">
+<meta name="description" content="">
+<meta name="author" content="Ed Dickinson">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="">
+<link rel="stylesheet" type="text/css" href="css.css"/>
+<script src="min-earth/miniature.earth.js"></script>
+
+<style>
+
+
+</style>
+
+</head>
+<body>
+
+
+<div id="big-pink">
+  <!-- <h1>GeoGen</h1> -->
+  <div id="title">
+    <!-- G e o G e n<br />GeoGen<br /> -->
+    <span>G</span>
+    <span>e</span>
+    <span>o</span>
+    <span>G</span>
+    <span>e</span>
+    <span>n</span>
+  </div>
+  <div id="myearth" class="little-earth">
+
+			<div id="tip-layer">
+				<div>
+					<div id="tip-big"></div>
+					<div id="tip-small"></div>
+				</div>
+			</div>
+
+			<div id="button-reset" onclick="reset();"></div>
+
+		</div>
+
+</div>
+
+<main>
+  Readout:<br /><br />
+  <div id="readout">
+    <div class="status geolocation">
+
+    </div>
+    <br />
+    <div class="status weather">
+
+    </div>
+    <br />
+    <div class="status place">
+
+    </div>
+    <br />
+    <div class="status landmark">
+
+    </div>
+    <br />
+    <div class="status bird">
+
+    </div>
+
+  </div>
+
+<!-- <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span> -->
+</main>
+
+
+</body>
+<script>
+let dom = {
+  readout: document.querySelector('#readout'),
+  status: {
+    geolocation: document.querySelector('.status.geolocation'),
+    bird: document.querySelector('.status.bird'),
+    place: document.querySelector('.status.place'),
+    landmark: document.querySelector('.status.landmark'),
+    weather: document.querySelector('.status.weather')
+  }
+}
+
+const loading_dots = '<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>'
+
+async function get(url) {
+  const response = await fetch(url, {mode: 'cors'});
+  const result = await response.json();
+  console.log(result)
+
+  return result
+}
+
+</script>
+<script src='equinoxer.js'></script>
+<script src='geolocation.js'></script>
+<script src='findbird.js'></script>
+<script src='findplace.js'></script>
+<script src='findweather.js'></script>
+<script src='min-earth/setup.js'></script>
+<script>
+
+
+
+
+
+</script>
+
+</html>
