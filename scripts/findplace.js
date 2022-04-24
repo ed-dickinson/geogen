@@ -1,4 +1,4 @@
-
+// import secrets from '/scripts/modules/secrets.js'
 
 let place
 let town
@@ -18,7 +18,7 @@ const findPlace = (lat, lng) => {
 
 
 
-  get(`https://secure.geonames.org/findNearbyPlaceNameJSON?formatted=true&lat=${lat}&lng=${lng}&username=ed1903&style=full`).then(res => {
+  get(`https://secure.geonames.org/findNearbyPlaceNameJSON?formatted=true&lat=${lat}&lng=${lng}&username=${secrets.GEONAMES}&style=full`).then(res => {
     town = res.geonames[0]
     finishLoad()
     let location_array = [town.adminName5, town.adminName4, town.adminName3, town.adminName2, town.adminName1]
@@ -39,7 +39,7 @@ const findPlace = (lat, lng) => {
   })
 
 
-  get(`http://api.geonames.org/findNearbyWikipediaJSON?formatted=true&lat=${lat}&lng=${lng}&username=ed1903&style=full`).then(res => {
+  get(`http://api.geonames.org/findNearbyWikipediaJSON?formatted=true&lat=${lat}&lng=${lng}&username=${secrets.GEONAMES}&style=full`).then(res => {
 
     // let landmark = res.geonames.find(x=>{return x.feature === 'landmark'})
     // if (landmark !== undefined) {

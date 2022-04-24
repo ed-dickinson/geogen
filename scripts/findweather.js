@@ -1,4 +1,4 @@
-
+// import secrets from '/scripts/modules/secrets.js'
 
 let weather
 
@@ -42,8 +42,7 @@ const findWeather = (lat, lng) => {
   //   `
   // })
 
-  let open_weather_key = 'b4b2af52611eaad0c3fd551079da6596'
-  get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${open_weather_key}`).then(res => {
+  get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${secrets.OPEN_WEATHER}`).then(res => {
     weather = res
 
     let wind_direction = findWindDirectionName(weather.wind.deg)
