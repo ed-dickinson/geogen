@@ -40,9 +40,12 @@
 				</div>
 			</div>
 
-			<div id="button-reset" onclick="reset();"></div>
+			<div id="button-reset" onclick="reset();">
+      </div>
 
-		</div>
+	</div>
+
+  <canvas id="oscilloscope" height="100"></canvas>
 
 </div>
 
@@ -68,7 +71,42 @@
     <div class="status bird">
 
     </div>
+    <div class="status notation">
+      <div class="status key">
+        Key: <span></span>
+      </div>
+      <div class="status stave">
+        ________________________________<br />
+        ________________________________<br />
+        ________________________________<br />
+        ________________________________<br />
+        ________________________________
+        <div class="status sharpsandflats">
 
+        </div>
+        <div class="status notes">
+        </div>
+      </div>
+      <!-- BASS CLEF IS G D B F A -->
+      <!-- TREBLE IS    E G B D F -->
+
+      <!-- clef is the squiggle, stave is the lines -->
+    </div>
+
+  </div>
+
+  <div id="controls">
+    <button id="play">Play</button>
+    <input type="range" min="0" max="24" value="12" class="slider" id="slider-note"><br />
+    <button id="majmin">major</button>
+    <input type="range" min="0" max="11" value="0" class="slider" id="slider-key"><br />
+    OP1 (€)<input type="range" min="1" max="100" value="50" class="slider" id="slider-op1"><button class='wave-type'>sine</button><br />
+    OP2 (£)<input type="range" min="1" max="100" value="50" class="slider" id="slider-op2"><button class='wave-type'>sine</button><br />
+    OP3 ($)<input type="range" min="1" max="100" value="50" class="slider" id="slider-op3"><button class='wave-type'>sine</button><br />
+    OP4 (¥)<input type="range" min="1" max="100" value="50" class="slider" id="slider-op4"><button class='wave-type'>sine</button>
+    <button><div id="algo-display">
+
+    </div></button>
   </div>
 
 <!-- <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span> -->
@@ -84,7 +122,10 @@ let dom = {
     bird: document.querySelector('.status.bird'),
     place: document.querySelector('.status.place'),
     landmark: document.querySelector('.status.landmark'),
-    weather: document.querySelector('.status.weather')
+    weather: document.querySelector('.status.weather'),
+    key: document.querySelector('.status.key'),
+    sharpsandflats: document.querySelector('.status.sharpsandflats'),
+    notes: document.querySelector('.status .notes')
   }
 }
 
@@ -97,6 +138,18 @@ async function get(url) {
 
   return result
 }
+
+let gen_params = {doLatLongCalculations : function(lat, lng) {
+  console.log(lat, lng)
+  let equatorial_radius = 6378.137 // (in metres) //
+  let equatorial_circumference = 40075.017 // (in km) // (2*Math.PI)*equatorial_radius
+  let sidereal_day = 23.9344699 // (true period of a 360 rotation of earth in space)
+  // this.rotationalSpeed = ((2*Math.PI)*6378137*Math.cos(lat)) / sidereal_day
+  //gives km/h, max is 1674.36 at equator, min is 0 at poles
+  this.rotationalSpeed = (equatorial_circumference*Math.cos(lat*(Math.PI/180))) / sidereal_day
+  let tempo_decimals = 2
+  this.tempo = Math.round((this.rotationalSpeed / 10) * Math.pow(10,tempo_decimals)) / Math.pow(10, tempo_decimals)
+}}
 
 </script>
 <!-- <script type='module'>
@@ -111,6 +164,11 @@ import secrets from '/scripts/modules/secrets.js'
 <script src='scripts/findplace.js'></script>
 <script src='scripts/findweather.js'></script>
 <script src='scripts/libs/min-earth/setup.js'></script>
+
+<script src='scripts/web-audio.js' type='module'></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/gh/chaosprint/glicol@latest/js/src/glicol.js"></script> -->
+
 <script>
 
 </script>

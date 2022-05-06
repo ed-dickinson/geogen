@@ -12,6 +12,10 @@ function geoFindMe() {
     const latitude  = position.coords.latitude;
     const longitude = position.coords.longitude;
 
+    gen_params.latitude = latitude
+    gen_params.longitutde = longitude
+    gen_params.doLatLongCalculations(latitude, longitude)
+
     myearth.options.location = {lat: latitude, lng: longitude}
     myearth.goTo({lat: latitude, lng: longitude}, {zoom: 1.2, duration: 400})
 
@@ -64,6 +68,8 @@ function geoFindMe() {
     status.innerHTML = 'Locating' + loading_dots;
     navigator.geolocation.getCurrentPosition(success, error);
   }
+
+
 
 }
 
