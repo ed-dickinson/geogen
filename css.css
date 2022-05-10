@@ -149,3 +149,56 @@ canvas#oscilloscope {
   width: 1em;
   height: 1em;
 }
+
+/* CUSTOM KNOB */
+.custom-knob {
+  width: 1em;
+  height: 1em;
+  background-color: white;
+  border: 2px solid pink;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  /* prevent text selection */
+  -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.custom-knob::after {
+  content: '';
+  border: 1px solid pink;
+  height: 50%;
+  width: 0%;
+  position: absolute;
+  left: calc(50% - 1px);
+
+}
+
+/* input[type=range] {
+
+  appearance: none;
+} */
+
+button {
+  font-family: monospace;
+}
+
+#algo-selector {
+  /* height: 26px;
+  width: 180px; */
+  height: 39px;
+  width: 270px;
+  cursor: pointer;
+  background-image: url('assets/algos-unfilled.png');
+  background-size: 100%;
+  /* filter: invert(); */
+  /* background-color: pink; */
+}
+#algo-selector span.selected {
+  background-image: url('assets/algos-filled.png');
+  background-size: cover
+}
