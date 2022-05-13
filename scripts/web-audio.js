@@ -256,6 +256,9 @@ document.querySelector('#slider-op2-gain').addEventListener('input', ()=>{
 })
 
 
+document.querySelector('#volume-knob').object.controls(op1.gain.gain)
+
+
 // Major Key is C D E  F G A B - or 0 2 4 5 7 9 11
 // Minor key is C D Eb F G Ab Bb - or 0 2 3 5 7 8 10
 
@@ -297,66 +300,3 @@ for (let i = 0; i < total_algorithms; i++) {
 //   algorithm+1 === algorithms.length ? algorithm = 0 : algorithm++
 //   dom.controls.algorithm_button.innerHTML = algorithms[algorithm]
 // })
-
-const trackMouseMove = () => {
-  console.log('moved', mouse_movement.mousedown.x - event.y)
-}
-const endMouseMove = () => {
-  window.removeEventListener('mousemove', knob_obj.trackMouseMove)
-  window.removeEventListener('mouseup', endMouseMove)
-}
-
-let mouse_movement = {
-  mousedown : {x : null, y : null},
-  // mouseup : {x : null, y : null}
-}
-
-function CustomKnob(min, max, value, knob_dom, display_dom) {
-  this.min = min
-  this.max = max
-  this.value = value
-  let rotation_limit = 150
-  this.rotate = () => {
-    let range = this.max - this.min
-    let ratio = this.value / range
-    let rotation = -150 + (ratio * 300)
-    knob_dom.style.transform = `rotate(${this.value}deg)`
-
-  }
-  this.trackMouseMove = () => {
-    let moved = mouse_movement.mousedown.x - event.y
-    console.log('moved', moved)
-    // if (this.value > this.min && this.value < this.max) {
-      this.value = this.reference_value + moved
-      // knob_dom.style.transform = `rotate(${this.value}deg)`
-      this.rotate(this.value)
-      display_dom.innerHTML = this.value
-    // }
-
-  }
-  this.endMouseMove = () => {
-    window.removeEventListener('mousemove', this.trackMouseMove)
-    window.removeEventListener('mouseup', this.endMouseMove)
-  }
-}
-
-document.querySelectorAll('.custom-knob').forEach(knob => {
-
-  let knob_dom = knob
-  let display_dom = document.createElement('span')
-  let knob_container = document.createElement('span')
-  knob_dom.parentNode.insertBefore(knob_container, knob_dom)
-  knob_dom.parentNode.removeChild(knob)
-  knob_container.appendChild(knob_dom)
-  knob_container.appendChild(display_dom)
-
-  let knob_obj = new CustomKnob(parseInt(knob.attributes.min.value), parseInt(knob.attributes.max.value), parseInt(knob.attributes.value.value), knob_dom, display_dom)
-  knob.addEventListener('mousedown', () => {
-    console.log(knob.attributes)
-    mouse_movement.mousedown = {x : event.x ,y : event.y}
-    knob_obj.reference_value = knob_obj.value
-    window.addEventListener('mousemove', knob_obj.trackMouseMove)
-    window.addEventListener('mouseup', knob_obj.endMouseMove)
-  })
-  console.log(knob)
-})
