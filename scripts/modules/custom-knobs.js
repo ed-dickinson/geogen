@@ -4,34 +4,54 @@ let mouse_movement = {
 }
 
 
+const toDecimalPlaces = (input, places) => {
+  let output = Math.round(input * Math.pow(10,2)) / Math.pow(10,2)
+  return output
+}
+
+
 function CustomKnob(min, max, value, knob_dom, display_dom) {
   this.min = min
   this.max = max
   this.value = value
   let rotation_limit = 150
-  this.rotate = () => {
-    let range = this.max - this.min
-    let ratio = this.value / range
-    let rotation = -150 + (ratio * 300)
-    knob_dom.style.transform = `rotate(${this.value}deg)`
+  this.rotate = (r) => {
+    // let range = this.max - this.min
+    // let ratio = this.value / range
+    // let rotation = -150 + (ratio * 300)
+    knob_dom.style.transform = `rotate(${r}deg)`
 
   }
   this.trackMouseMove = () => {
-    let moved = mouse_movement.mousedown.x - event.y
-    console.log('moved', moved)
-    // if (this.value > this.min && this.value < this.max) {
-      this.value = this.reference_value + moved
-      // knob_dom.style.transform = `rotate(${this.value}deg)`
-      this.rotate(this.value)
+
+    let moved = this.mousedown - event.y
+
+    // sets limits on turning
+    if (this.reference_value + moved >= -150 && this.reference_value + moved <= 150) {
+      this.rotation_value = this.reference_value + moved
+    } else {
+      this.rotation_value = this.reference_value + moved > 150 ? 150 : -150
+    }
+
+    this.value = ((this.rotation_value + 150) / 300) * (this.max - this.min)
+    this.rotate(this.rotation_value)
+
+    if (this.max >= 100) {
       display_dom.innerHTML = this.value
-    // }
+    } else if (this.max >= 10) {
+      display_dom.innerHTML = this.value.toFixed(1)
+    } else {
+      display_dom.innerHTML = this.value.toFixed(2)
+    }
+
     this.target.value = this.value
-    console.log(this.target, this.value)
+
   }
   this.endMouseMove = () => {
     window.removeEventListener('mousemove', this.trackMouseMove)
     window.removeEventListener('mouseup', this.endMouseMove)
   }
+  // assigns dom knob to target value - must be passsed a refrence (so by object)
   this.controls = (target) => {
     this.target = target
   }
@@ -39,9 +59,8 @@ function CustomKnob(min, max, value, knob_dom, display_dom) {
   //   knob_dom.style.transform = `rotate(${
   //   ( -150 + ((this.value - this.min) / (this.max - this.min) * 300) )
   // }deg)`
-  knob_dom.style.transform = `rotate(${
-  ( -150 + ((this.value - this.min) / (this.max - this.min) * 300) )
-}deg)`
+  this.rotation_value = ( -150 + ((this.value - this.min) / (this.max - this.min) * 300) )
+  knob_dom.style.transform = `rotate(${this.rotation_value}deg)`
 }
 
 document.querySelectorAll('.custom-knob').forEach(knob => {
@@ -58,8 +77,9 @@ document.querySelectorAll('.custom-knob').forEach(knob => {
   let knob_obj = new CustomKnob(parseInt(knob.attributes.min.value), parseInt(knob.attributes.max.value), parseInt(knob.attributes.value.value), knob_dom, display_dom)
   knob.addEventListener('mousedown', () => {
     console.log(knob.attributes)
-    mouse_movement.mousedown = {x : event.x ,y : event.y}
-    knob_obj.reference_value = knob_obj.value
+    // mouse_movement.mousedown = {x : event.x ,y : event.y}
+    knob_obj.mousedown = event.y
+    knob_obj.reference_value = knob_obj.rotation_value
     window.addEventListener('mousemove', knob_obj.trackMouseMove)
     window.addEventListener('mouseup', knob_obj.endMouseMove)
   })

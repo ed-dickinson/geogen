@@ -206,17 +206,15 @@ document.querySelector('input#slider-key').addEventListener('input', () => {
 })
 
 const testSequencer = () => {
+  // assings sequence to minor or major tones
   let key_note_sequence = major_bool ? major_sequence : minor_sequence
-
 
   // loop reset
   if (sequence_i === 8) {sequence_i = 0}
 
   let note_index = random_sequence[(sequence_i%key_note_sequence.length)]
 
-  // console.log(note_index + key_value, typeof key_value, typeof note_index)
-
-  let frq = Math.round(note_frqs[note_index + key_value] * (10 ^ 2)) / (10 ^ 2)
+  let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
   op1.oscillator.frequency.value = frq * op1.ratio
   op2.oscillator.frequency.value = frq * op2.ratio
   sequence_i++
