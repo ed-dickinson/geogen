@@ -1,6 +1,11 @@
 import oscilloscoper from './modules/oscilloscope.js'
 import domStaver from './modules/staver.js'
 
+import FMSynth from './libs/mohayonao/fm-synth/index.js'
+import FMSynthAlgorithms from './libs/mohayonao/fm-synth/algorithms.js'
+import Operator from './libs/mohayonao/operator/index.js'
+
+
 console.log('safari? -','webkitAudioContext' in window)
 // const audioContext = 'webkitAudioContext' in window ? new webkitAudioContext() : new AudioContext();
 
@@ -10,56 +15,73 @@ console.log('safari? -','webkitAudioContext' in window)
 
 // for now the melody will be made by the decimals of lat/long
 
-let context = new AudioContext()
+let audioContext = new AudioContext()
 
-function Operator(type, freq, gain) {
-  this.oscillator = context.createOscillator();
-  this.gain = context.createGain();
-  this.oscillator.type = type;
-  // this.oscillator.frequency.value = freq;
-  // this.gain.gain.value = gain;
-  this.ratio = {value : 1}
-  this.oscillator.connect(this.gain)
-  this.oscillator.start(0)
-}
+// function Operator(type, freq, gain) {
+//   this.oscillator = .createOscillator();
+//   this.gain = .createGain();
+//   this.oscillator.type = type;
+//   // this.oscillator.frequency.value = freq;
+//   // this.gain.gain.value = gain;
+//   this.ratio = {value : 1}
+//   this.oscillator.connect(this.gain)
+//   this.oscillator.start(0)
+// }
 
 /*
    carrier 1 controls direct frq so 0.5 is half midi note frequency, 2 is double
    modulators control the frq of the next by ratio
 */
 
-let op1 = new Operator('sine', 220, 1)
+// let A = audioContext.createDelay();
+let A = new Operator(audioContext);
+let B = new Operator(audioContext);
+let C = new Operator(audioContext);
+let D = new Operator(audioContext);
+// let fm = new FMSynth("E-D-C->; B-A->", [ A, B, C, D, 0 ]);
+// let fm = new FMSynth("D-C->; B-A->", [ A, B, C, D, 0 ]);
+let fm = new FMSynth("D-C-B-A->", [ A, B, C, D, 0 ]);
 
-let op2 = new Operator('sine', 2200, 1)
 
-let op3 = new Operator('sine', 2200, 1)
 
-let op4 = new Operator('sine', 2200, 1)
+// let op1 = new Operator('sine', 220, 1)
+//
+// let op2 = new Operator('sine', 2200, 1)
+//
+// let op3 = new Operator('sine', 2200, 1)
+//
+// let op4 = new Operator('sine', 2200, 1)
+//
+let operators = [A, B, C, D]
 
-let operators = [op1, op2, op3, op4]
+
+
 
 const operatorControls = (operator, i) => {
   let operator_no = i+1
   let wave_type = document.querySelector(`#controls-op${operator_no} .wave-type`)
   wave_type.addEventListener('click', ()=> {
 
-    let current_wave_i = oscillator_wave_types.indexOf(operator.oscillator.type)
+    // get index of current wave in array and set next
+    let current_wave_i = oscillator_wave_types.indexOf(operator.type)
     current_wave_i === oscillator_wave_types.length-1 ? current_wave_i = 0 : current_wave_i++
-    operator.oscillator.type = oscillator_wave_types[current_wave_i]
-    // wave_type.innerHTML = oscillator_wave_types[current_wave_i]
-    // wave_type =
-    oscillator_wave_types.forEach(osw => {
-      wave_type.classList.remove(osw)
-    })
+    operator.type = oscillator_wave_types[current_wave_i]
+
+    //remove add add wavetypes classes
+    oscillator_wave_types.forEach(osw => {wave_type.classList.remove(osw)})
     wave_type.classList.add(oscillator_wave_types[current_wave_i])
   })
-  document.querySelector(`#controls-op${operator_no} .gain`).object.attachTo(operators[i].gain.gain)
+  document.querySelector(`#controls-op${operator_no} .gain`).object.attachTo(operators[i].gain)
+  // console.log(operators[i].gain)
+  operators[i].ratio = {value : 1}
   document.querySelector(`#controls-op${operator_no} .coarse`).object.attachTo(operators[i].ratio)
 
 
 
   return {}
 }
+
+console.log(A)
 
 let operator_controls = []
 
@@ -70,9 +92,9 @@ operators.forEach(op => {
 
 
 
-// let osc = context.createOscillator()
+// let osc = .createOscillator()
 // osc.type = "sine"
-// // const loaded_wave = context.createPeriodicWave(imported_wavetable.real, imported_wavetable.imag)
+// // const loaded_wave = .createPeriodicWave(imported_wavetable.real, imported_wavetable.imag)
 // // osc.setPeriodicWave(loaded_wave)
 //
 // osc.frequency.value = 220
@@ -81,7 +103,7 @@ operators.forEach(op => {
 // op1.gain.connect(osc.frequency)
 
 
-var filter = context.createBiquadFilter();
+var filter = audioContext.createBiquadFilter();
 filter.frequency.value = 2000;
 filter.Q.value = 10;
 // op2.gain.connect(op1.oscillator.frequency)
@@ -91,65 +113,31 @@ filter.Q.value = 10;
 // op1.gain.connect(filter)
 // // op2.gain.connect(filter)
 
-const masterGain = context.createGain();
+const masterGain = audioContext.createGain();
 masterGain.gain.value = 0.2;
 filter.connect(masterGain)
-masterGain.connect(context.destination);
+masterGain.connect(audioContext.destination);
 
-oscilloscoper(context, masterGain, document.querySelector('canvas#oscilloscope'))
+fm.connect(filter)
+fm.start(0)
+
+oscilloscoper(audioContext, masterGain, document.querySelector('canvas#oscilloscope'))
 
 let playing = false;
 let played = false;
 document.querySelector('#play').addEventListener('click', ()=>{
   // !played && op1.start(0)
   played = true
-  // playing ? masterGain.disconnect(context.destination) : masterGain.connect(context.destination)
+  // playing ? masterGain.disconnect(audioContext.destination) : masterGain.connect(audioContext.destination)
   playing ? filter.disconnect(masterGain) : filter.connect(masterGain)
   playing = !playing
 })
 
 const changeAlgorithm = () => {
-  operators.forEach(op => {op.gain.disconnect()})
 
-  switch(algorithm) {
+  fm = new FMSynth(FMSynthAlgorithms[4][algorithm], [ A, B, C, D, 0 ]);
 
-    case 0:
-      op4.gain.connect(op3.oscillator.frequency)
-      op3.gain.connect(op2.oscillator.frequency)
-      op2.gain.connect(op1.oscillator.frequency)
-      op1.gain.connect(filter)
-      break;
-    case 1:
-      op4.gain.connect(op2.oscillator.frequency)
-      op3.gain.connect(op2.oscillator.frequency)
-      op2.gain.connect(op1.oscillator.frequency)
-      op1.gain.connect(filter)
-      break;
-    case 5:
-      op4.gain.connect(op3.oscillator.frequency)
-      op3.gain.connect(op2.oscillator.frequency)
-      op2.gain.connect(filter)
-      op1.gain.connect(filter)
-      break;
-    case 7:
-      op4.gain.connect(op3.oscillator.frequency)
-      op3.gain.connect(filter)
-      op2.gain.connect(op1.oscillator.frequency)
-      op1.gain.connect(filter)
-      break;
-    case 9:
-      op4.gain.connect(op3.oscillator.frequency)
-      op3.gain.connect(filter)
-      op2.gain.connect(filter)
-      op1.gain.connect(filter)
-      break;
-    case 10:
-      op4.gain.connect(filter)
-      op3.gain.connect(filter)
-      op2.gain.connect(filter)
-      op1.gain.connect(filter)
-      break;
-  }
+  console.log(FMSynthAlgorithms[4][algorithm])
 }
 
 
@@ -226,10 +214,10 @@ const testSequencer = () => {
   let note_index = random_sequence[(sequence_i%key_note_sequence.length)]
 
   let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
-  op1.oscillator.frequency.value = frq * op1.ratio.value
-  op2.oscillator.frequency.value = frq * op2.ratio.value
-  op3.oscillator.frequency.value = frq * op3.ratio.value
-  op4.oscillator.frequency.value = frq * op4.ratio.value
+  operators.forEach(op => {
+    op.frequency.value = frq * op.ratio.value
+  })
+
   sequence_i++
 }
 setInterval(testSequencer, 200)

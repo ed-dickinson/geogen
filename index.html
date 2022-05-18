@@ -45,7 +45,14 @@
 
 	</div>
 
-  <canvas id="oscilloscope" height="100"></canvas>
+  <div id="oscilloscope-cont">
+    <canvas id="oscilloscope" height="100" width="100"></canvas>
+  </div>
+  <script>
+  let oscilloscope_canvas = document.querySelector('#oscilloscope')
+  oscilloscope_canvas.width = oscilloscope_canvas.parentNode.offsetWidth
+  </script>
+
 
 </div>
 
@@ -104,22 +111,46 @@
     <button id="majmin">major</button>
     <div id="controls-op1">
       <input type="range" min="0" max="11" value="0" class="slider" id="slider-key"><br />
-      OP1 (€)<input type="range" min="1" max="100" value="50" class="slider" id="slider-op1"><button class='wave-type'>sine</button>
-      <div class="custom-knob" min="0.5" max="50" value="25"></div>
+      OP1 (€)
+      <button class='wave-type sine'>
+        <svg xmlns="http://www.w3.org/2000/svg"  style="height: 1em" viewBox="-1 -1 10 6">
+          <path style="fill: none; stroke: pink; stroke-width: 1"/>
+        </svg>
+      </button>
+      <div class="custom-knob coarse" min="0.5" max="50" step="0.5" value="1"></div>
+      <div class="custom-knob gain" min="0" max="100" value="50"></div>
     </div>
     <div id="controls-op2">
-      OP2 (£)<input type="range" min="1" max="100" value="50" class="slider" id="slider-op2">
-      <button class='wave-type'>sine</button>
-      <input type="range" min="0" max="100" value="50" class="slider" id="slider-op2-gain">
+      OP2 (£)
+      <button class='wave-type sine'>
+        <svg xmlns="http://www.w3.org/2000/svg"  style="height: 1em" viewBox="-1 -1 10 6">
+          <path style="fill: none; stroke: pink; stroke-width: 1"/>
+        </svg>
+      </button>
+      <div class="custom-knob coarse" min="0.5" max="50" step="0.5" value="1"></div>
+      <div class="custom-knob gain" min="0" max="100" value="50"></div>
+
     </div>
     <div id="controls-op3">
-      OP3 ($)<input type="range" min="1" max="100" value="50" class="slider" id="slider-op3"><button class='wave-type'>sine</button>
-      <div class="custom-knob" min="0.5" max="50" value="25"></div>
+      OP3 ($)
+      <button class='wave-type sine'>
+        <svg xmlns="http://www.w3.org/2000/svg"  style="height: 1em" viewBox="-1 -1 10 6">
+          <path style="fill: none; stroke: pink; stroke-width: 1"/>
+        </svg>
+      </button>
+      <div class="custom-knob coarse" min="0" max="5" step="0.01" value="1"></div>
+      <div class="custom-knob gain" min="0" max="1000" value="50"></div>
     </div>
     <div id="controls-op4">
-      OP4 (¥)<input type="range" min="1" max="100" value="50" class="slider" id="slider-op4"><button class='wave-type'>sine</button>
+      OP4 (¥)
+      <button class='wave-type sine'>
+        <svg xmlns="http://www.w3.org/2000/svg"  style="height: 1em" viewBox="-1 -1 10 6">
+          <path style="fill: none; stroke: pink; stroke-width: 1"/>
+        </svg>
+      </button>
 
-      <div class="custom-knob" min="0.5" max="50" value="25"></div>
+      <div class="custom-knob coarse" min="0" max="5" step="0.01" value="1"></div>
+      <div class="custom-knob gain" min="0" max="1000" value="50"></div>
 
 
 
@@ -196,6 +227,10 @@ import secrets from '/scripts/modules/secrets.js'
 
 <script src='scripts/modules/custom-knobs.js' type='module'></script>
 <script src='scripts/web-audio.js' type='module'></script>
+
+<!-- <script src='scripts/libs/fm-synth/main.js' type='module'></script> -->
+<!-- <script src='scripts/web-audio-mohay.js' type='module'></script> -->
+
 
 
 <!-- <script src="https://cdn.jsdelivr.net/gh/chaosprint/glicol@latest/js/src/glicol.js"></script> -->

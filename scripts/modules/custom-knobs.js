@@ -9,18 +9,32 @@ const toDecimalPlaces = (input, places) => {
   return output
 }
 
+const toIncrement = (input, increment) => {
+  let output = input - (input % increment)
+  return output
+}
 
-function CustomKnob(min, max, value, knob_dom, display_dom) {
+
+
+/////// needs decimally of ratio values for purposes of harmony
+
+
+function CustomKnob(min, max, value, knob_dom, display_dom, step) {
   this.min = min
   this.max = max
   this.value = value
   let rotation_limit = 150
   this.rotate = (r) => {
-    // let range = this.max - this.min
-    // let ratio = this.value / range
-    // let rotation = -150 + (ratio * 300)
     knob_dom.style.transform = `rotate(${r}deg)`
-
+  }
+  this.updateDisplay = () => {
+    if (this.max >= 100) {
+      display_dom.innerHTML = this.value.toFixed(0)
+    } else if (this.max >= 10) {
+      display_dom.innerHTML = this.value.toFixed(1)
+    } else {
+      display_dom.innerHTML = this.value.toFixed(2)
+    }
   }
   this.trackMouseMove = () => {
 
@@ -33,16 +47,14 @@ function CustomKnob(min, max, value, knob_dom, display_dom) {
       this.rotation_value = this.reference_value + moved > 150 ? 150 : -150
     }
 
-    this.value = ((this.rotation_value + 150) / 300) * (this.max - this.min)
+    this.value = (((this.rotation_value + 150) / 300) * (this.max - this.min)) + this.min
     this.rotate(this.rotation_value)
 
-    if (this.max >= 100) {
-      display_dom.innerHTML = this.value
-    } else if (this.max >= 10) {
-      display_dom.innerHTML = this.value.toFixed(1)
-    } else {
-      display_dom.innerHTML = this.value.toFixed(2)
+    if (step !== 'free') {
+      this.value = toIncrement(this.value, step)
     }
+
+    this.updateDisplay()
 
     this.target.value = this.value
 
@@ -52,15 +64,13 @@ function CustomKnob(min, max, value, knob_dom, display_dom) {
     window.removeEventListener('mouseup', this.endMouseMove)
   }
   // assigns dom knob to target value - must be passsed a refrence (so by object)
-  this.controls = (target) => {
+  this.attachTo = (target) => {
     this.target = target
   }
-  // intial set
-  //   knob_dom.style.transform = `rotate(${
-  //   ( -150 + ((this.value - this.min) / (this.max - this.min) * 300) )
-  // }deg)`
+  // initial dial rotation set
   this.rotation_value = ( -150 + ((this.value - this.min) / (this.max - this.min) * 300) )
   knob_dom.style.transform = `rotate(${this.rotation_value}deg)`
+  this.updateDisplay()
 }
 
 document.querySelectorAll('.custom-knob').forEach(knob => {
@@ -72,18 +82,24 @@ document.querySelectorAll('.custom-knob').forEach(knob => {
   knob_dom.parentNode.removeChild(knob)
   knob_container.appendChild(knob_dom)
   knob_container.appendChild(display_dom)
-  display_dom.innerHTML = knob.attributes.value.value
+  // display_dom.innerHTML = knob.attributes.value.value
 
-  let knob_obj = new CustomKnob(parseInt(knob.attributes.min.value), parseInt(knob.attributes.max.value), parseInt(knob.attributes.value.value), knob_dom, display_dom)
+
+
+  let knob_obj = new CustomKnob(
+    parseFloat(knob.attributes.min.value),
+    parseInt(knob.attributes.max.value),
+    parseFloat(knob.attributes.value.value),
+    knob_dom,
+    display_dom,
+    knob.attributes.step ? knob.attributes.step.value : 'free'
+  )
   knob.addEventListener('mousedown', () => {
-    console.log(knob.attributes)
-    // mouse_movement.mousedown = {x : event.x ,y : event.y}
     knob_obj.mousedown = event.y
     knob_obj.reference_value = knob_obj.rotation_value
     window.addEventListener('mousemove', knob_obj.trackMouseMove)
     window.addEventListener('mouseup', knob_obj.endMouseMove)
   })
-  console.log(knob)
   knob.object = knob_obj
 })
 
