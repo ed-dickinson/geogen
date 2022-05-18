@@ -125,16 +125,50 @@ const changeAlgorithm = () => {
       op2.gain.connect(op1.oscillator.frequency)
       op1.gain.connect(filter)
       break;
+    case 2:
+      op4.gain.connect(op2.oscillator.frequency)
+      op3.gain.connect(op1.oscillator.frequency)
+      op2.gain.connect(op1.oscillator.frequency)
+      op1.gain.connect(filter)
+      break;
+    case 3:
+      op4.gain.connect(op3.oscillator.frequency)
+      op4.gain.connect(op2.oscillator.frequency)
+      op3.gain.connect(op1.oscillator.frequency)
+      op2.gain.connect(op1.oscillator.frequency)
+      op1.gain.connect(filter)
+      break;
+    case 4:
+      op4.gain.connect(op3.oscillator.frequency)
+      op3.gain.connect(op2.oscillator.frequency)
+      op3.gain.connect(op1.oscillator.frequency)
+      op2.gain.connect(filter)
+      op1.gain.connect(filter)
+      break;
     case 5:
       op4.gain.connect(op3.oscillator.frequency)
       op3.gain.connect(op2.oscillator.frequency)
       op2.gain.connect(filter)
       op1.gain.connect(filter)
       break;
+    case 6:
+      op4.gain.connect(op1.oscillator.frequency)
+      op3.gain.connect(op1.oscillator.frequency)
+      op2.gain.connect(op1.oscillator.frequency)
+      op1.gain.connect(filter)
+      break;
     case 7:
       op4.gain.connect(op3.oscillator.frequency)
       op3.gain.connect(filter)
       op2.gain.connect(op1.oscillator.frequency)
+      op1.gain.connect(filter)
+      break;
+    case 8:
+      op4.gain.connect(op3.oscillator.frequency)
+      op4.gain.connect(op2.oscillator.frequency)
+      op4.gain.connect(op1.oscillator.frequency)
+      op3.gain.connect(filter)
+      op2.gain.connect(filter)
       op1.gain.connect(filter)
       break;
     case 9:
