@@ -4,17 +4,28 @@ import domStaver from './modules/staver.js'
 console.log('safari? -','webkitAudioContext' in window)
 // const audioContext = 'webkitAudioContext' in window ? new webkitAudioContext() : new AudioContext();
 
+let audioContext = new AudioContext()
+
+const SAMPLE_RATE = audioContext.sampleRate;
+const timeLength = 1; // measured in seconds
+
+const buffer = audioContext.createBuffer(
+  1,
+  SAMPLE_RATE * timeLength,
+  SAMPLE_RATE
+);
+
 // I ii iii IV V vi (Vii) - in C maj is C Dm Em F G Am Bsus
 
 // a scale is made of 7 notes
 
 // for now the melody will be made by the decimals of lat/long
 
-let context = new AudioContext()
+
 
 function Operator(type, freq, gain) {
-  this.oscillator = context.createOscillator();
-  this.gain = context.createGain();
+  this.oscillator = audioContext.createOscillator();
+  this.gain = audioContext.createGain();
   this.oscillator.type = type;
   // this.oscillator.frequency.value = freq;
   // this.gain.gain.value = gain;
@@ -70,9 +81,9 @@ operators.forEach(op => {
 
 
 
-// let osc = context.createOscillator()
+// let osc = audioContext.createOscillator()
 // osc.type = "sine"
-// // const loaded_wave = context.createPeriodicWave(imported_wavetable.real, imported_wavetable.imag)
+// // const loaded_wave = audioContext.createPeriodicWave(imported_wavetable.real, imported_wavetable.imag)
 // // osc.setPeriodicWave(loaded_wave)
 //
 // osc.frequency.value = 220
@@ -81,7 +92,7 @@ operators.forEach(op => {
 // op1.gain.connect(osc.frequency)
 
 
-var filter = context.createBiquadFilter();
+var filter = audioContext.createBiquadFilter();
 filter.frequency.value = 2000;
 filter.Q.value = 10;
 // op2.gain.connect(op1.oscillator.frequency)
@@ -91,19 +102,19 @@ filter.Q.value = 10;
 // op1.gain.connect(filter)
 // // op2.gain.connect(filter)
 
-const masterGain = context.createGain();
+const masterGain = audioContext.createGain();
 masterGain.gain.value = 0.2;
 filter.connect(masterGain)
-masterGain.connect(context.destination);
+masterGain.connect(audioContext.destination);
 
-oscilloscoper(context, masterGain, document.querySelector('canvas#oscilloscope'))
+oscilloscoper(audioContext, masterGain, document.querySelector('canvas#oscilloscope'))
 
 let playing = false;
 let played = false;
 document.querySelector('#play').addEventListener('click', ()=>{
   // !played && op1.start(0)
   played = true
-  // playing ? masterGain.disconnect(context.destination) : masterGain.connect(context.destination)
+  // playing ? masterGain.disconnect(audioContext.destination) : masterGain.connect(audioContext.destination)
   playing ? filter.disconnect(masterGain) : filter.connect(masterGain)
   playing = !playing
 })
@@ -185,6 +196,7 @@ const changeAlgorithm = () => {
       break;
   }
 }
+// changeAlgorithm(0)
 
 
 
@@ -309,7 +321,6 @@ document.querySelector('#volume-knob').object.attachTo(masterGain.gain)
 let algorithm = 0;
 let total_algorithms = 11
 let image_widths = [10,14,14,14,14,14,20,14,20,20,26]
-console.log(image_widths.reduce((total, num)=>{return total + num}))
 for (let i = 0; i < total_algorithms; i++) {
 
   let total_width = dom.controls.algorithm_cont.clientWidth
@@ -337,6 +348,7 @@ for (let i = 0; i < total_algorithms; i++) {
     changeAlgorithm(i)
   })
 }
+changeAlgorithm(0)
 // let algorithms = ['¥>$>£>€-', '€$£¥<br />||||', '€>$-<br />£>¥-']
 // dom.controls.algorithm_button = document.querySelector('#algo-button')
 // dom.controls.algorithm_button.innerHTML = algorithms[algorithm]

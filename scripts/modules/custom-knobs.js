@@ -67,6 +67,10 @@ function CustomKnob(min, max, value, knob_dom, display_dom, step) {
   this.attachTo = (target) => {
     this.target = target
   }
+  this.listers = []
+  this.addListener = (func) => {
+    this.listeners.push(func)
+  }
   // initial dial rotation set
   this.rotation_value = ( -150 + ((this.value - this.min) / (this.max - this.min) * 300) )
   knob_dom.style.transform = `rotate(${this.rotation_value}deg)`

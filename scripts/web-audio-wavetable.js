@@ -1,13 +1,19 @@
 import oscilloscoper from './modules/oscilloscope.js'
 import domStaver from './modules/staver.js'
 
-import FMSynth from './libs/mohayonao/fm-synth/index.js'
-import FMSynthAlgorithms from './libs/mohayonao/fm-synth/algorithms.js'
-import Operator from './libs/mohayonao/operator/index.js'
-
-
 console.log('safari? -','webkitAudioContext' in window)
 // const audioContext = 'webkitAudioContext' in window ? new webkitAudioContext() : new AudioContext();
+
+let audioContext = new AudioContext()
+
+const SAMPLE_RATE = audioContext.sampleRate;
+const timeLength = 1; // measured in seconds
+
+const buffer = audioContext.createBuffer(
+  1,
+  SAMPLE_RATE * timeLength,
+  SAMPLE_RATE
+);
 
 // I ii iii IV V vi (Vii) - in C maj is C Dm Em F G Am Bsus
 
@@ -15,99 +21,60 @@ console.log('safari? -','webkitAudioContext' in window)
 
 // for now the melody will be made by the decimals of lat/long
 
-let audioContext = new AudioContext()
-
-// function Operator(type, freq, gain) {
-//   this.oscillator = .createOscillator();
-//   this.gain = .createGain();
-//   this.oscillator.type = type;
-//   // this.oscillator.frequency.value = freq;
-//   // this.gain.gain.value = gain;
-//   this.ratio = {value : 1}
-//   this.oscillator.connect(this.gain)
-//   this.oscillator.start(0)
-// }
-
-/*
-   carrier 1 controls direct frq so 0.5 is half midi note frequency, 2 is double
-   modulators control the frq of the next by ratio
-*/
-
-/*
-Operator
-    constructor(audioContext: AudioContext)
-  Instance attribute
-    context: AudioContext
-    type: string
-    frequency: AudioParam
-    detune: AudioParam
-    gain: AudioParam
-    onended: function
-  Instance methods
-    connect(destination: AudioNode): void
-    disconnect(): void
-    start(when: number): void
-    stop(when: number): void
-    setPeriodicWave(periodicWave: PeriodicWave): void
-    setEnvelope(envelope: any, target: string = 'gain'): void
-    getEnvelope(target: string = 'gain'): void
-*/
-/*
-FMSynth = Operator
-    constructor(algorithm: number|string, operators: any[])
-  Instance attribute
-    context: AudioContext
-    operators: any[]
-    algorithm: string
-    onended: function
-  Instance methods
-    connect(destination: AudioNode): void
-    disconnect(): void
-    start(when: number): void
-    stop(when: number): void
-*/
-
-// let A = audioContext.createDelay();
-let A = new Operator(audioContext);
-let B = new Operator(audioContext);
-let C = new Operator(audioContext);
-let D = new Operator(audioContext);
-// let fm = new FMSynth("E-D-C->; B-A->", [ A, B, C, D, 0 ]);
-// let fm = new FMSynth("D-C->; B-A->", [ A, B, C, D, 0 ]);
-let fm = new FMSynth("D-C-B-A->", [ A, B, C, D, 0 ]);
 
 
 
-// let op1 = new Operator('sine', 220, 1)
-//
-// let op2 = new Operator('sine', 2200, 1)
-//
-// let op3 = new Operator('sine', 2200, 1)
-//
-// let op4 = new Operator('sine', 2200, 1)
-//
-let operators = [A, B, C, D]
+var osc = audioContext.createOscillator();
+
+var real = new Float32Array(8);
+var imag = new Float32Array(8);
+
+let wavetable_object = { real : [] , imag : [] }
+
+let wavetable_controls = {
+  real : document.querySelectorAll(`#controls-wavetable-real .wavetable-node`),
+  imag : document.querySelectorAll(`#controls-wavetable-imag .wavetable-node`)
+}
+
+for (let i = 0; i < 8; i++) {
+  wavetable_object.real[i] = { value : wavetable_controls.real[i].object.value }
+  wavetable_object.imag[i] = { value : wavetable_controls.imag[i].object.value }
+  wavetable_controls.real[i].object.attachTo(wavetable_object.real[i])
+  wavetable_controls.imag[i].object.attachTo(wavetable_object.imag[i])
+  wavetable_controls.real[i].object.addListener(()=>{console.log('added listener')})
+  wavetable_controls.imag[i].object.addListener(()=>{console.log('added listener')})
+  real[i] = wavetable_object.real[i].value
+  imag[i] = wavetable_object.imag[i].value
+
+}
+console.log(wavetable_object)
+
+var wave = audioContext.createPeriodicWave(real, imag);
+
+console.log(real, imag)
+
+osc.setPeriodicWave(wave);
 
 
 
+// osc.stop(2);
 
 const operatorControls = (operator, i) => {
   let operator_no = i+1
   let wave_type = document.querySelector(`#controls-op${operator_no} .wave-type`)
   wave_type.addEventListener('click', ()=> {
 
-    // get index of current wave in array and set next
-    let current_wave_i = oscillator_wave_types.indexOf(operator.type)
+    let current_wave_i = oscillator_wave_types.indexOf(operator.oscillator.type)
     current_wave_i === oscillator_wave_types.length-1 ? current_wave_i = 0 : current_wave_i++
-    operator.type = oscillator_wave_types[current_wave_i]
-
-    //remove add add wavetypes classes
-    oscillator_wave_types.forEach(osw => {wave_type.classList.remove(osw)})
+    operator.oscillator.type = oscillator_wave_types[current_wave_i]
+    // wave_type.innerHTML = oscillator_wave_types[current_wave_i]
+    // wave_type =
+    oscillator_wave_types.forEach(osw => {
+      wave_type.classList.remove(osw)
+    })
     wave_type.classList.add(oscillator_wave_types[current_wave_i])
   })
-  document.querySelector(`#controls-op${operator_no} .gain`).object.attachTo(operators[i].gain)
-  // console.log(operators[i].gain)
-  operators[i].ratio = {value : 1}
+  document.querySelector(`#controls-op${operator_no} .gain`).object.attachTo(operators[i].gain.gain)
   document.querySelector(`#controls-op${operator_no} .coarse`).object.attachTo(operators[i].ratio)
 
 
@@ -115,20 +82,18 @@ const operatorControls = (operator, i) => {
   return {}
 }
 
-console.log(A)
-
 let operator_controls = []
 
-operators.forEach(op => {
-  operator_controls.push(operatorControls(op, operators.indexOf(op)))
+// operators.forEach(op => {
+//   operator_controls.push(operatorControls(op, operators.indexOf(op)))
+//
+// })
 
-})
 
 
-
-// let osc = .createOscillator()
+// let osc = audioContext.createOscillator()
 // osc.type = "sine"
-// // const loaded_wave = .createPeriodicWave(imported_wavetable.real, imported_wavetable.imag)
+// // const loaded_wave = audioContext.createPeriodicWave(imported_wavetable.real, imported_wavetable.imag)
 // // osc.setPeriodicWave(loaded_wave)
 //
 // osc.frequency.value = 220
@@ -152,8 +117,9 @@ masterGain.gain.value = 0.2;
 filter.connect(masterGain)
 masterGain.connect(audioContext.destination);
 
-fm.connect(filter)
-fm.start(0)
+osc.connect(filter);
+
+osc.start();
 
 oscilloscoper(audioContext, masterGain, document.querySelector('canvas#oscilloscope'))
 
@@ -166,13 +132,6 @@ document.querySelector('#play').addEventListener('click', ()=>{
   playing ? filter.disconnect(masterGain) : filter.connect(masterGain)
   playing = !playing
 })
-
-const changeAlgorithm = () => {
-
-  fm = new FMSynth(FMSynthAlgorithms[4][algorithm], [ A, B, C, D, 0 ]);
-
-  console.log(FMSynthAlgorithms[4][algorithm])
-}
 
 
 
@@ -188,7 +147,6 @@ for (let i = 1; i < 25; i++) {
   note_frqs[i] = note_frqs[0] * Math.pow(2, (i)/12)
   // note_frqs.push(note_frqs[note_frqs.length-1] * Math.pow(2, 1/12)) // this does it sequential
 }
-console.log(note_frqs)
 
 let random_sequence = new Array()
 for (let i = 0; i < 8; i++) {
@@ -248,10 +206,7 @@ const testSequencer = () => {
   let note_index = random_sequence[(sequence_i%key_note_sequence.length)]
 
   let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
-  operators.forEach(op => {
-    op.frequency.value = frq * op.ratio.value
-  })
-
+  osc.frequency.value = frq
   sequence_i++
 }
 setInterval(testSequencer, 200)
@@ -297,7 +252,6 @@ document.querySelector('#volume-knob').object.attachTo(masterGain.gain)
 let algorithm = 0;
 let total_algorithms = 11
 let image_widths = [10,14,14,14,14,14,20,14,20,20,26]
-console.log(image_widths.reduce((total, num)=>{return total + num}))
 for (let i = 0; i < total_algorithms; i++) {
 
   let total_width = dom.controls.algorithm_cont.clientWidth
@@ -325,6 +279,7 @@ for (let i = 0; i < total_algorithms; i++) {
     changeAlgorithm(i)
   })
 }
+// changeAlgorithm(0)
 // let algorithms = ['¥>$>£>€-', '€$£¥<br />||||', '€>$-<br />£>¥-']
 // dom.controls.algorithm_button = document.querySelector('#algo-button')
 // dom.controls.algorithm_button.innerHTML = algorithms[algorithm]
