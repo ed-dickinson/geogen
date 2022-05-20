@@ -36,20 +36,34 @@ let wavetable_controls = {
   imag : document.querySelectorAll(`#controls-wavetable-imag .wavetable-node`)
 }
 
+const updateWavetable = () => {
+  console.log('update wavetable')
+  for (let i = 0; i < 8; i++) {
+    wavetable_object.real[i] = { value : wavetable_controls.real[i].object.value }
+    wavetable_object.imag[i] = { value : wavetable_controls.imag[i].object.value }
+
+    real[i] = wavetable_object.real[i].value
+    imag[i] = wavetable_object.imag[i].value
+
+  }
+  wave = audioContext.createPeriodicWave(real, imag);
+  osc.setPeriodicWave(wave);
+}
+
 for (let i = 0; i < 8; i++) {
   wavetable_object.real[i] = { value : wavetable_controls.real[i].object.value }
   wavetable_object.imag[i] = { value : wavetable_controls.imag[i].object.value }
   wavetable_controls.real[i].object.attachTo(wavetable_object.real[i])
   wavetable_controls.imag[i].object.attachTo(wavetable_object.imag[i])
-  wavetable_controls.real[i].object.addListener(()=>{console.log('added listener')})
-  wavetable_controls.imag[i].object.addListener(()=>{console.log('added listener')})
+  wavetable_controls.real[i].object.addListener(updateWavetable)
+  wavetable_controls.imag[i].object.addListener(updateWavetable)
   real[i] = wavetable_object.real[i].value
   imag[i] = wavetable_object.imag[i].value
 
 }
 console.log(wavetable_object)
 
-var wave = audioContext.createPeriodicWave(real, imag);
+let wave = audioContext.createPeriodicWave(real, imag);
 
 console.log(real, imag)
 

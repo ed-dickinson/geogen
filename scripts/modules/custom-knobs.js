@@ -58,6 +58,8 @@ function CustomKnob(min, max, value, knob_dom, display_dom, step) {
 
     this.target.value = this.value
 
+    this.listeners.forEach(func => {func()})
+
   }
   this.endMouseMove = () => {
     window.removeEventListener('mousemove', this.trackMouseMove)
@@ -67,9 +69,9 @@ function CustomKnob(min, max, value, knob_dom, display_dom, step) {
   this.attachTo = (target) => {
     this.target = target
   }
-  this.listers = []
-  this.addListener = (func) => {
-    this.listeners.push(func)
+  this.listeners = []
+  this.addListener = (listenerFunction) => {
+    this.listeners.push(listenerFunction)
   }
   // initial dial rotation set
   this.rotation_value = ( -150 + ((this.value - this.min) / (this.max - this.min) * 300) )
