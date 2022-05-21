@@ -6,6 +6,11 @@ import FMSynthAlgorithms from './libs/mohayonao/fm-synth/algorithms.js'
 import Operator from './libs/mohayonao/operator/index.js'
 
 
+// lat/ long will be like : 55.8347224 -4.2618284, so a whole value of 1 or 2 or 3 digits
+// long can be up to 360 (or 180 and -180)
+// lat can be between 90 and -90
+// - then 7 decimal places
+
 console.log('safari? -','webkitAudioContext' in window)
 // const audioContext = 'webkitAudioContext' in window ? new webkitAudioContext() : new AudioContext();
 
@@ -14,6 +19,10 @@ console.log('safari? -','webkitAudioContext' in window)
 // a scale is made of 7 notes
 
 // for now the melody will be made by the decimals of lat/long
+
+let lat = 55.8347224
+let long = -4.2618284
+
 
 let audioContext = new AudioContext()
 
@@ -76,6 +85,8 @@ let D = new Operator(audioContext);
 // let fm = new FMSynth("D-C->; B-A->", [ A, B, C, D, 0 ]);
 let fm = new FMSynth("D-C-B-A->", [ A, B, C, D, 0 ]);
 
+console.log(fm)
+
 
 
 // let op1 = new Operator('sine', 220, 1)
@@ -87,6 +98,14 @@ let fm = new FMSynth("D-C-B-A->", [ A, B, C, D, 0 ]);
 // let op4 = new Operator('sine', 2200, 1)
 //
 let operators = [A, B, C, D]
+
+let E = new Operator(audioContext);
+let F = new Operator(audioContext);
+let G = new Operator(audioContext);
+let H = new Operator(audioContext);
+
+let fm2 = new FMSynth("D-C-B-A->", [ E, F, G, H, 0 ]);
+let fm2operators = [E, F, G, H]
 
 
 
@@ -115,7 +134,6 @@ const operatorControls = (operator, i) => {
   return {}
 }
 
-console.log(A)
 
 let operator_controls = []
 
@@ -155,6 +173,15 @@ masterGain.connect(audioContext.destination);
 fm.connect(filter)
 fm.start(0)
 
+var fm2filter = audioContext.createBiquadFilter();
+fm2filter.frequency.value = 5000;
+fm2filter.Q.value = 10;
+
+fm2filter.connect(masterGain)
+
+fm2.connect(fm2filter)
+fm2.start(0)
+
 oscilloscoper(audioContext, masterGain, document.querySelector('canvas#oscilloscope'))
 
 let playing = false;
@@ -188,13 +215,30 @@ for (let i = 1; i < 25; i++) {
   note_frqs[i] = note_frqs[0] * Math.pow(2, (i)/12)
   // note_frqs.push(note_frqs[note_frqs.length-1] * Math.pow(2, 1/12)) // this does it sequential
 }
-console.log(note_frqs)
 
 let random_sequence = new Array()
 for (let i = 0; i < 8; i++) {
   let entry = Math.floor(Math.random() * 7)
   random_sequence.push(entry)
 }
+// console.log(random_sequence)
+
+let lat_sequence = new Array()
+let lat_decimals = lat.toString().split('.')[1]
+lat_decimals += lat_decimals[6]
+for (let i = 0; i < 8; i++) {
+  lat_sequence.push(parseInt(lat_decimals[i]))
+}
+
+let long_sequence = new Array()
+let long_decimals = long.toString().split('.')[1]
+for (let i = 0; i < 8; i++) {
+  long_sequence.push(parseInt(long_decimals[i]))
+}
+
+// lat_sequence = [8, 3, 4, 7, 2, 2, 4, 4]
+// console.log(lat_sequence)
+// for (let)
 // random_sequence = [0,1,2,3,4,5,6,7]
 
 
@@ -211,8 +255,8 @@ for (let i = 0; i < 8; i++) {
 
 let sequence_i = 0
 
-let major_sequence = [0,2,4,5,7,9,11]
-let minor_sequence = [0,2,3,5,7,8,10]
+let major_sequence = [0,2,4,5,7,9,11, 12,14,16]
+let minor_sequence = [0,2,3,5,7,8,10, 12,14,15]
 let major_bool = true
 
 let note_names = ['A','A#','B','C','C#','D','D#','E','F','F#','G','G#']
@@ -245,16 +289,69 @@ const testSequencer = () => {
   // loop reset
   if (sequence_i === 8) {sequence_i = 0}
 
-  let note_index = random_sequence[(sequence_i%key_note_sequence.length)]
+  let note_index = lat_sequence[(sequence_i%key_note_sequence.length)]
+  console.log(note_index)
 
   let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
+  console.log(frq)
   operators.forEach(op => {
+    // console.log(op)
     op.frequency.value = frq * op.ratio.value
   })
 
   sequence_i++
 }
-setInterval(testSequencer, 200)
+testSequencer()
+setInterval(testSequencer, 2000)
+
+let sequence2waiter = 0
+let sequence2i = 0
+let sequence2stage = 0
+let sequence2notes2play = 0
+
+const longSequencer = () => {
+  // need to set envelope
+  if (sequence2i === 7) { sequence2i = 0 }
+
+  let key_note_sequence = major_bool ? major_sequence : minor_sequence
+  if (sequence2waiter > 0) {
+    sequence2waiter--
+    console.log('longseq wait', sequence2waiter)
+    return
+  }
+  console.log('longseq play', sequence2notes2play)
+  if (sequence2stage === 0) { // time to wait til next notes
+    console.log('set longseq wait')
+    sequence2waiter = long_sequence[sequence2i]
+    sequence2stage = 1
+  } else if (sequence2stage === 1) { // amount of notes to play next
+    console.log('set longseq play')
+    sequence2notes2play = long_sequence[sequence2i]
+    sequence2stage = 2
+  } else { //
+    if (sequence2notes2play > 0) {
+
+      let note_index = long_sequence[(sequence2i%key_note_sequence.length)]
+      console.log(note_index)
+      let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
+      fm2operators.forEach(op => {
+        op.ratio = {value : 2}
+        op.frequency.value = frq * op.ratio.value
+      })
+      sequence2notes2play--
+
+    } else {
+      sequence2stage = 0
+    }
+  }
+
+  sequence2i++
+  if (Math.random() > 0.5) {
+    sequence2i--
+  }
+}
+longSequencer()
+setInterval(longSequencer, 200)
 
 // let domControls = [{dom:'#slider-op1', action: ()=>{
 //   op2.gain.gain.value = event.target.value * 5
@@ -297,7 +394,6 @@ document.querySelector('#volume-knob').object.attachTo(masterGain.gain)
 let algorithm = 0;
 let total_algorithms = 11
 let image_widths = [10,14,14,14,14,14,20,14,20,20,26]
-console.log(image_widths.reduce((total, num)=>{return total + num}))
 for (let i = 0; i < total_algorithms; i++) {
 
   let total_width = dom.controls.algorithm_cont.clientWidth

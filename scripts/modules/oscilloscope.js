@@ -8,12 +8,18 @@ const oscilloscoper = (context, input, canvas) => {
 
   let canvas_context = canvas.getContext('2d')
 
+  let frame_iterator = 0
+
   const draw = () => {
     let WIDTH = canvas.clientWidth
     let HEIGHT = canvas.clientHeight
 
     var drawVisual = requestAnimationFrame(draw);
-    if (drawVisual % 5 !== 0) { // fps changer
+    // let fps = 10t
+    frame_iterator++
+    if (frame_iterator === 10) {frame_iterator = 0}
+    // console.log(frame_iterator % 10)
+    if (frame_iterator % 60 !== 0) { // fps changer
       return
     }
     analyser.getByteTimeDomainData(dataArray);

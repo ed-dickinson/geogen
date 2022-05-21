@@ -240,7 +240,7 @@ document.querySelector('input#slider-note').addEventListener('input', () => {
 })
 
 document.querySelector('input#slider-volume').addEventListener('input', () => {
-  op1.gain.gain.value = event.target.value * 5
+  masterGain.gain.value = event.target.value * 1
 })
 
 // document.querySelector('#slider-op1').addEventListener('input', ()=>{
