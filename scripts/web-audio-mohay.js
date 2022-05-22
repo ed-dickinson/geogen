@@ -23,6 +23,13 @@ console.log('safari? -','webkitAudioContext' in window)
 let lat = 55.8347224
 let long = -4.2618284
 
+const createFakeLatLong = () => {
+  lat = parseFloat((Math.random()*360 - 180).toFixed(7))
+  long = parseFloat((Math.random()*180 - 90).toFixed(7))
+}
+createFakeLatLong()
+console.log(lat, long)
+
 
 let audioContext = new AudioContext()
 
@@ -85,7 +92,6 @@ let D = new Operator(audioContext);
 // let fm = new FMSynth("D-C->; B-A->", [ A, B, C, D, 0 ]);
 let fm = new FMSynth("D-C-B-A->", [ A, B, C, D, 0 ]);
 
-console.log(fm)
 
 
 
@@ -156,7 +162,7 @@ operators.forEach(op => {
 
 
 var filter = audioContext.createBiquadFilter();
-filter.frequency.value = 2000;
+filter.frequency.value = 1000;
 filter.Q.value = 10;
 // op2.gain.connect(op1.oscillator.frequency)
 // // osc.connect(filter)
@@ -167,20 +173,31 @@ filter.Q.value = 10;
 
 const masterGain = audioContext.createGain();
 masterGain.gain.value = 0.2;
-filter.connect(masterGain)
+// filter.connect(masterGain)
 masterGain.connect(audioContext.destination);
 
 fm.connect(filter)
 fm.start(0)
 
 var fm2filter = audioContext.createBiquadFilter();
-fm2filter.frequency.value = 5000;
+fm2filter.frequency.value = 2000;
 fm2filter.Q.value = 10;
 
-fm2filter.connect(masterGain)
+// fm2filter.connect(masterGain)
 
 fm2.connect(fm2filter)
 fm2.start(0)
+
+const fm1Gain = audioContext.createGain()
+fm1Gain.gain.value = 1
+filter.connect(fm1Gain)
+fm1Gain.connect(masterGain)
+
+const fm2Gain = audioContext.createGain()
+fm2Gain.gain.value = 1
+fm2filter.connect(fm2Gain)
+fm2Gain.connect(masterGain)
+
 
 oscilloscoper(audioContext, masterGain, document.querySelector('canvas#oscilloscope'))
 
@@ -282,27 +299,34 @@ document.querySelector('input#slider-key').addEventListener('input', () => {
   // domStaver.updateStaveNotes(dom.status.notes, random_sequence, key_value)
 })
 
-const testSequencer = () => {
+const latSequencer = () => {
+
+  let now = audioContext.currentTime
   // assings sequence to minor or major tones
   let key_note_sequence = major_bool ? major_sequence : minor_sequence
 
   // loop reset
   if (sequence_i === 8) {sequence_i = 0}
 
+  // if (sequence_i === 7) {}
+
   let note_index = lat_sequence[(sequence_i%key_note_sequence.length)]
-  console.log(note_index)
 
   let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
-  console.log(frq)
+  console.log(note_index, key_note_sequence[note_index] + key_value, '>', frq)
   operators.forEach(op => {
     // console.log(op)
     op.frequency.value = frq * op.ratio.value
   })
 
+  // console.log(long_sequence[sequence_i===7?4:sequence_i] * 10)
+  operators[1].gain.linearRampToValueAtTime(long_sequence[sequence_i===7?4:sequence_i] * 10, now + 2 )
+  console.log(operators[1].gain)
+
   sequence_i++
 }
-testSequencer()
-setInterval(testSequencer, 2000)
+latSequencer()
+setInterval(latSequencer, 2000)
 
 let sequence2waiter = 0
 let sequence2i = 0
@@ -316,28 +340,28 @@ const longSequencer = () => {
   let key_note_sequence = major_bool ? major_sequence : minor_sequence
   if (sequence2waiter > 0) {
     sequence2waiter--
-    console.log('longseq wait', sequence2waiter)
     return
   }
-  console.log('longseq play', sequence2notes2play)
   if (sequence2stage === 0) { // time to wait til next notes
-    console.log('set longseq wait')
     sequence2waiter = long_sequence[sequence2i]
     sequence2stage = 1
   } else if (sequence2stage === 1) { // amount of notes to play next
-    console.log('set longseq play')
     sequence2notes2play = long_sequence[sequence2i]
     sequence2stage = 2
   } else { //
     if (sequence2notes2play > 0) {
+      let now = audioContext.currentTime
 
       let note_index = long_sequence[(sequence2i%key_note_sequence.length)]
-      console.log(note_index)
       let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
       fm2operators.forEach(op => {
         op.ratio = {value : 2}
         op.frequency.value = frq * op.ratio.value
       })
+      fm2Gain.gain.setValueAtTime(0.001, now);
+      fm2Gain.gain.linearRampToValueAtTime(1, now + 0.005);
+      fm2Gain.gain.linearRampToValueAtTime(1, now + 0.050);
+      fm2Gain.gain.exponentialRampToValueAtTime(0.001, now + 0.195);
       sequence2notes2play--
 
     } else {
@@ -346,7 +370,7 @@ const longSequencer = () => {
   }
 
   sequence2i++
-  if (Math.random() > 0.5) {
+  if (Math.random() > 0.5) { // this stops the sequencer getting stuck if values lock symmetric
     sequence2i--
   }
 }
