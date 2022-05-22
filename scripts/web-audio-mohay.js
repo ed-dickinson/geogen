@@ -130,12 +130,10 @@ const operatorControls = (operator, i) => {
     oscillator_wave_types.forEach(osw => {wave_type.classList.remove(osw)})
     wave_type.classList.add(oscillator_wave_types[current_wave_i])
   })
-  document.querySelector(`#controls-op${operator_no} .gain`).object.attachTo(operators[i].gain)
+  document.querySelector(`#controls-op${operator_no} .gain`).object.attachTo(operator.gain)
   // console.log(operators[i].gain)
-  operators[i].ratio = {value : 1}
-  document.querySelector(`#controls-op${operator_no} .coarse`).object.attachTo(operators[i].ratio)
-
-
+  operator.ratio = {value : 1}
+  document.querySelector(`#controls-op${operator_no} .coarse`).object.attachTo(operator.ratio)
 
   return {}
 }
@@ -144,10 +142,16 @@ const operatorControls = (operator, i) => {
 let operator_controls = []
 
 operators.forEach(op => {
-  operator_controls.push(operatorControls(op, operators.indexOf(op)))
+  // operator_controls.push(operatorControls(op, operators.indexOf(op)))
+  operatorControls(op, operators.indexOf(op))
 
+console.log(operator_controls)
 })
-
+fm2operators.forEach(op => {
+  operatorControls(op, fm2operators.indexOf(op) + 4)
+})
+// console.log(A)
+A.ratio.value = 0.5
 
 
 // let osc = .createOscillator()
@@ -299,6 +303,8 @@ document.querySelector('input#slider-key').addEventListener('input', () => {
   // domStaver.updateStaveNotes(dom.status.notes, random_sequence, key_value)
 })
 
+//something very annoying is happening with the sequencer and NaN -ing
+
 const latSequencer = () => {
 
   let now = audioContext.currentTime
@@ -313,6 +319,7 @@ const latSequencer = () => {
   let note_index = lat_sequence[(sequence_i%key_note_sequence.length)]
 
   let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
+  if (isNaN(frq)) {sequence_i++; return}
   console.log(note_index, key_note_sequence[note_index] + key_value, '>', frq)
   operators.forEach(op => {
     // console.log(op)
@@ -355,7 +362,7 @@ const longSequencer = () => {
       let note_index = long_sequence[(sequence2i%key_note_sequence.length)]
       let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
       fm2operators.forEach(op => {
-        op.ratio = {value : 2}
+        // op.ratio = {value : 2}
         op.frequency.value = frq * op.ratio.value
       })
       fm2Gain.gain.setValueAtTime(0.001, now);
@@ -375,7 +382,7 @@ const longSequencer = () => {
   }
 }
 longSequencer()
-setInterval(longSequencer, 200)
+setInterval(longSequencer, 150)
 
 // let domControls = [{dom:'#slider-op1', action: ()=>{
 //   op2.gain.gain.value = event.target.value * 5

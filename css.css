@@ -230,3 +230,9 @@ button.wave-type {
   background-image: url('assets/algos-filled.png');
   background-size: cover
 }
+
+#controls-fm1, #controls-fm2 {
+  display: inline-block;
+  border-left: 2px solid pink;
+  padding-left: 10px;
+}
