@@ -71,3 +71,5 @@ Math.degSin= function(d){
 Math.degCos= function(d){
     return Math.cos(Math.degRad(d))
 }
+
+export default Date.getSeasons

@@ -1,3 +1,7 @@
+import findPlace from './modules/findPlace.js'
+import findWeather from './modules/findWeather.js'
+import getSeasons from './modules/equinoxer.js'
+
 let coords
 
 function geoFindMe() {

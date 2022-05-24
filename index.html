@@ -104,11 +104,11 @@
 
   <div id="controls">
     <button id="play">Play</button>
-    <input type="range" min="0" max="1" step="0.02" value="1" class="slider" id="slider-volume">
+    <!-- <input type="range" min="0" max="1" step="0.02" value="1" class="slider" id="slider-volume"> -->
     <div class="custom-knob" min="0" max="1" value="1" id="volume-knob"></div>
   </br>
-    <input type="range" min="0" max="24" value="12" class="slider" id="slider-note"><br />
-    <button id="majmin">major</button>
+    <!-- <input type="range" min="0" max="24" value="12" class="slider" id="slider-note"><br /> -->
+    <button id="majmin">major</button><input type="range" min="0" max="11" value="0" class="slider" id="slider-key"><br />
     <div id="controls-wavetable-real">
       <div class="custom-knob wavetable-node" min="-1" max="1" value="0"></div>
       <div class="custom-knob wavetable-node" min="-1" max="1" value="1"></div>
@@ -131,7 +131,6 @@
     </div>
     <div id="controls-fm1">
       <div id="controls-op1">
-        <input type="range" min="0" max="11" value="0" class="slider" id="slider-key"><br />
         OP1 (€)
         <button class='wave-type sine'>
           <svg xmlns="http://www.w3.org/2000/svg"  style="height: 1em" viewBox="-1 -1 10 6">
@@ -176,7 +175,6 @@
     </div>
     <div id="controls-fm2">
       <div id="controls-op5">
-        <input type="range" min="0" max="11" value="0" class="slider" id="slider-key"><br />
         OP5 (€)
         <button class='wave-type sine'>
           <svg xmlns="http://www.w3.org/2000/svg"  style="height: 1em" viewBox="-1 -1 10 6">
@@ -184,7 +182,7 @@
           </svg>
         </button>
         <div class="custom-knob coarse" min="0.5" max="50" step="0.5" value="1"></div>
-        <div class="custom-knob gain" min="0" max="100" value="1"></div>
+        <div class="custom-knob gain" min="0" max="10" value="0.5"></div>
       </div>
       <div id="controls-op6">
         OP6 (£)
@@ -283,11 +281,9 @@ import secrets from '/scripts/modules/secrets.js'
 </script> -->
 <script src='scripts/modules/secrets.js'></script>
 
-<script src='scripts/equinoxer.js'></script>
-<!-- <script src='scripts/geolocation.js'></script> -->
+<script src='scripts/geolocation.js' type='module'></script>
 <script src='scripts/findbird.js'></script>
-<script src='scripts/findplace.js'></script>
-<script src='scripts/findweather.js'></script>
+
 <script src='scripts/libs/min-earth/setup.js'></script>
 
 <script src='scripts/modules/custom-knobs.js' type='module'></script>

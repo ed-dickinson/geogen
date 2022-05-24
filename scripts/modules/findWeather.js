@@ -7,6 +7,7 @@ const findWeather = (lat, lng) => {
   dom.status.weather.innerHTML = 'Finding weather' + loading_dots
 
   const findWindDirectionName = (deg) => {
+    let wind_direction
     if (deg >= 157.5 && deg < 202.5) {
       wind_direction = 'southerly'
     } else if (deg >= 337.5 || deg < 22.5) {
@@ -67,3 +68,5 @@ const findWeather = (lat, lng) => {
 
 // the equivalent search on their website
 // https://xeno-canto.org/explore?query=lat:49%20lon:24%20q:A
+
+export default findWeather

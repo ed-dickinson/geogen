@@ -3,6 +3,8 @@
 let bird
 
 
+// find bird has stopped working for some reason when chaning place & weather and equinoxer to modules ??????
+
 
 const findBird = (lat, lng) => {
   dom.status.bird.innerHTML = 'Finding birds' + loading_dots

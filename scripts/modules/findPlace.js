@@ -67,3 +67,5 @@ const findPlace = (lat, lng) => {
 
 // the equivalent search on their website
 // https://xeno-canto.org/explore?query=lat:49%20lon:24%20q:A
+
+export default findPlace

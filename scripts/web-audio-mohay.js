@@ -1,3 +1,6 @@
+// add a big ranom chordal pad in like a beat long maybe
+
+
 import oscilloscoper from './modules/oscilloscope.js'
 import domStaver from './modules/staver.js'
 
@@ -32,17 +35,6 @@ console.log(lat, long)
 
 
 let audioContext = new AudioContext()
-
-// function Operator(type, freq, gain) {
-//   this.oscillator = .createOscillator();
-//   this.gain = .createGain();
-//   this.oscillator.type = type;
-//   // this.oscillator.frequency.value = freq;
-//   // this.gain.gain.value = gain;
-//   this.ratio = {value : 1}
-//   this.oscillator.connect(this.gain)
-//   this.oscillator.start(0)
-// }
 
 /*
    carrier 1 controls direct frq so 0.5 is half midi note frequency, 2 is double
@@ -92,17 +84,6 @@ let D = new Operator(audioContext);
 // let fm = new FMSynth("D-C->; B-A->", [ A, B, C, D, 0 ]);
 let fm = new FMSynth("D-C-B-A->", [ A, B, C, D, 0 ]);
 
-
-
-
-// let op1 = new Operator('sine', 220, 1)
-//
-// let op2 = new Operator('sine', 2200, 1)
-//
-// let op3 = new Operator('sine', 2200, 1)
-//
-// let op4 = new Operator('sine', 2200, 1)
-//
 let operators = [A, B, C, D]
 
 let E = new Operator(audioContext);
@@ -111,6 +92,7 @@ let G = new Operator(audioContext);
 let H = new Operator(audioContext);
 
 let fm2 = new FMSynth("D-C-B-A->", [ E, F, G, H, 0 ]);
+
 let fm2operators = [E, F, G, H]
 
 
@@ -148,10 +130,15 @@ operators.forEach(op => {
 console.log(operator_controls)
 })
 fm2operators.forEach(op => {
+  console.log(op, fm2operators.indexOf(op) + 4)
   operatorControls(op, fm2operators.indexOf(op) + 4)
 })
 // console.log(A)
 A.ratio.value = 0.5
+B.ratio.value = 2
+E.ratio.value = 2
+E.gain.value = 0.5
+F.ratio.value = 4
 
 
 // let osc = .createOscillator()
@@ -175,6 +162,20 @@ filter.Q.value = 10;
 // op1.gain.connect(filter)
 // // op2.gain.connect(filter)
 
+async function createReverb(path) {
+  let convolver = audioContext.createConvolver()
+  let response = await fetch(path)
+  let arraybuffer = await response.arrayBuffer()
+  convolver.buffer = await audioContext.decodeAudioData(arraybuffer)
+
+  return convolver
+}
+
+let reverb = await createReverb('./assets/impulse_responses/Musikvereinsaal.wav')
+let reverb2 = await createReverb('./assets/impulse_responses/Rays.wav')
+
+// reverb.connect(fm1Gain)
+
 const masterGain = audioContext.createGain();
 masterGain.gain.value = 0.2;
 // filter.connect(masterGain)
@@ -194,20 +195,36 @@ fm2.start(0)
 
 const fm1Gain = audioContext.createGain()
 fm1Gain.gain.value = 1
-filter.connect(fm1Gain)
+// filter.connect(fm1Gain)
+filter.connect(reverb)
+reverb.connect(masterGain)
 fm1Gain.connect(masterGain)
 
 const fm2Gain = audioContext.createGain()
 fm2Gain.gain.value = 1
-fm2filter.connect(fm2Gain)
+// fm2filter.connect(fm2Gain)
+fm2filter.connect(reverb2)
+reverb2.connect(fm2Gain)
 fm2Gain.connect(masterGain)
+
+console.log(fm2Gain)
+
+
 
 
 oscilloscoper(audioContext, masterGain, document.querySelector('canvas#oscilloscope'))
 
 let playing = false;
 let played = false;
+let unplayed = true;
 document.querySelector('#play').addEventListener('click', ()=>{
+  let unplayed_check = unplayed
+  unplayed ? unplayed = false : ''
+  if (unplayed_check) {
+    fm.start(0)
+    fm2.start(0)
+  }
+  // unplayed = false
   // !played && op1.start(0)
   played = true
   // playing ? masterGain.disconnect(audioContext.destination) : masterGain.connect(audioContext.destination)
@@ -217,7 +234,8 @@ document.querySelector('#play').addEventListener('click', ()=>{
 
 const changeAlgorithm = () => {
 
-  fm = new FMSynth(FMSynthAlgorithms[4][algorithm], [ A, B, C, D, 0 ]);
+  // fm = new FMSynth(FMSynthAlgorithms[4][algorithm], [ A, B, C, D, 0 ]);
+  fm2 = new FMSynth(FMSynthAlgorithms[4][algorithm], [ E, F, G, H, 0 ]);
 
   console.log(FMSynthAlgorithms[4][algorithm])
 }
@@ -256,6 +274,7 @@ let long_decimals = long.toString().split('.')[1]
 for (let i = 0; i < 8; i++) {
   long_sequence.push(parseInt(long_decimals[i]))
 }
+// console.log(long_sequence)
 
 // lat_sequence = [8, 3, 4, 7, 2, 2, 4, 4]
 // console.log(lat_sequence)
@@ -305,6 +324,8 @@ document.querySelector('input#slider-key').addEventListener('input', () => {
 
 //something very annoying is happening with the sequencer and NaN -ing
 
+let sequence_inf = 0
+
 const latSequencer = () => {
 
   let now = audioContext.currentTime
@@ -320,17 +341,21 @@ const latSequencer = () => {
 
   let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
   if (isNaN(frq)) {sequence_i++; return}
-  console.log(note_index, key_note_sequence[note_index] + key_value, '>', frq)
+  // console.log(note_index, key_note_sequence[note_index] + key_value, '>', frq)
   operators.forEach(op => {
-    // console.log(op)
-    op.frequency.value = frq * op.ratio.value
+    // op.frequency.value = frq * op.ratio.value
+    op.frequency.exponentialRampToValueAtTime(frq * op.ratio.value, now + 0.2)
   })
-
+  operators[0].gain.exponentialRampToValueAtTime((long_sequence[sequence_inf%7]/20)+0.7, now + 2 )
+  console.log(frq, (long_sequence[sequence_inf%7]/20)+0.7, long_sequence[sequence_i===7?4:sequence_i] * 10)
   // console.log(long_sequence[sequence_i===7?4:sequence_i] * 10)
-  operators[1].gain.linearRampToValueAtTime(long_sequence[sequence_i===7?4:sequence_i] * 10, now + 2 )
-  console.log(operators[1].gain)
+  operators[1].gain.exponentialRampToValueAtTime((long_sequence[sequence_i===7?4:sequence_i] * 10)+0.001, now + 2 )
+  // console.log(long_sequence)
+  // console.log(operators[2].frequency, (long_sequence[(sequence_inf+4%6)]*100)+1)
+  // operators[2].gain.exponentialRampToValueAtTime((long_sequence[(sequence_inf+4%7)]*100)+1, now + 2)
 
   sequence_i++
+  sequence_inf++
 }
 latSequencer()
 setInterval(latSequencer, 2000)
@@ -350,7 +375,7 @@ const longSequencer = () => {
     return
   }
   if (sequence2stage === 0) { // time to wait til next notes
-    sequence2waiter = long_sequence[sequence2i]
+    sequence2waiter = Math.floor(long_sequence[sequence2i] * 1.5)
     sequence2stage = 1
   } else if (sequence2stage === 1) { // amount of notes to play next
     sequence2notes2play = long_sequence[sequence2i]
@@ -382,37 +407,7 @@ const longSequencer = () => {
   }
 }
 longSequencer()
-setInterval(longSequencer, 150)
-
-// let domControls = [{dom:'#slider-op1', action: ()=>{
-//   op2.gain.gain.value = event.target.value * 5
-//   console.log(event)
-// }}]
-// domControls.forEach(one => {
-//   console.log(one)
-//   document.querySelector(one.dom).addEventListener('input', ()=>{console.log(1)})
-// })
-
-document.querySelector('input#slider-note').addEventListener('input', () => {
-  // osc.frequency.value = note_frqs[event.target.value]
-  op1.oscillator.frequency.value = note_frqs[event.target.value]
-})
-
-document.querySelector('input#slider-volume').addEventListener('input', () => {
-  op1.gain.gain.value = event.target.value * 5
-})
-
-// document.querySelector('#slider-op1').addEventListener('input', ()=>{
-//   op1.oscillator.frequency.value = event.target.value * 100;
-// })
-// document.querySelector('#slider-op2').addEventListener('input', ()=>{
-//   op2.oscillator.frequency.value = event.target.value * 100;
-// })
-// document.querySelector('#slider-op2-gain').addEventListener('input', ()=>{
-//   // op2.oscillator.frequency.value = event.target.value * 1;
-//   // op2.gain.gain.value = event.target.value * 5;
-//    op2.gain.gain.value = event.target.value * 5;
-// })
+setInterval(longSequencer, 250) // change to 200 or 100 to make sound less weird, 150 to be weird
 
 
 // document.querySelector('#volume-knob').object.attachTo(op1.gain.gain)
@@ -452,10 +447,11 @@ for (let i = 0; i < total_algorithms; i++) {
     changeAlgorithm(i)
   })
 }
-// let algorithms = ['¥>$>£>€-', '€$£¥<br />||||', '€>$-<br />£>¥-']
-// dom.controls.algorithm_button = document.querySelector('#algo-button')
-// dom.controls.algorithm_button.innerHTML = algorithms[algorithm]
-// dom.controls.algorithm_button.addEventListener('click', () => {
-//   algorithm+1 === algorithms.length ? algorithm = 0 : algorithm++
-//   dom.controls.algorithm_button.innerHTML = algorithms[algorithm]
-// })
+
+
+
+const birdSequencer = () => {
+  console.log('birdSequencer', bird)
+  if (bird !== undefined) {}
+}
+setInterval(birdSequencer, 1000)

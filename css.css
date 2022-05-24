@@ -234,5 +234,7 @@ button.wave-type {
 #controls-fm1, #controls-fm2 {
   display: inline-block;
   border-left: 2px solid pink;
+  border-top: 2px solid pink;
   padding-left: 10px;
+  padding-top: 4px;
 }
