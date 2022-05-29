@@ -75,8 +75,70 @@ const updateStaveNotes = (dom, sequence, key_value) => {
   })
 }
 
+const dom_note = document.querySelector('.status .note')
+
+const dom_notes_holder = document.querySelector('.status.notes')
+
+const dom_notes_array = []
+
+// E is bottom line on treble clef
+
+// const addLine = (dom, lines, above_or_below, on_line) => {
+//
+//   for (let i = 0; i < lines; i++) {
+//     let line = document.createElement('div')
+//     dom.classList.add('extra-note-line')
+//     dom.appendChild(line)
+//     line.style.top = `0px`
+//   }
+//
+// }
+
+for (let i = 0; i < 24; i++) {
+  let row_element = document.createElement('div')
+  row_element.classList.add('note-row')
+  dom_notes_holder.appendChild(row_element)
+  row_element.style.bottom = `${-2-5-20+(i*10*0.5)}px`
+  row_element.innerHTML = ''
+
+  let temp_array = []
+
+  for (let j = 0; j < 10; j++) {
+    let note_element = document.createElement('span')
+    note_element.classList.add('note')
+    note_element.innerHTML = ''
+    note_element.style.left = `${j * 15}px`
+    row_element.appendChild(note_element)
+    temp_array.push(note_element)
+
+    note_element.style.backgroundColor = `hsl(${j*20}, 100%, 50%)`
+  }
+
+  dom_notes_array.push(temp_array)
+  // element.style.left = `${i}em`
+}
+
+
+const flashNote = (note, key_value, timing) => {
+  // dom_note.style.display = 'block'
+  // dom_note.style.left = `${timing}em`
+  // dom_note.style.bottom = `${(note*0.6)-3.6}em`
+
+  dom_notes_array[(note + key_value)][timing].style.display = 'block'
+  dom_notes_array[(note + key_value)][timing].classList.add('flash')
+  setTimeout(()=>{
+    dom_notes_array[(note + key_value)][timing].style.display = 'none'
+    dom_notes_array[(note + key_value)][timing].classList.remove('flash')
+  }, 500)
+}
+
+// const hideNote = () => {
+//   dom_note.style.display = 'none'
+// }
+
 export default {
   findSharpsAndFlats,
   updateSharpsAndFlats,
-  updateStaveNotes
+  updateStaveNotes,
+  flashNote
 }

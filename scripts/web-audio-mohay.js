@@ -80,8 +80,7 @@ let A = new Operator(audioContext);
 let B = new Operator(audioContext);
 let C = new Operator(audioContext);
 let D = new Operator(audioContext);
-// let fm = new FMSynth("E-D-C->; B-A->", [ A, B, C, D, 0 ]);
-// let fm = new FMSynth("D-C->; B-A->", [ A, B, C, D, 0 ]);
+
 let fm = new FMSynth("D-C-B-A->", [ A, B, C, D, 0 ]);
 
 let operators = [A, B, C, D]
@@ -95,7 +94,14 @@ let fm2 = new FMSynth("D-C-B-A->", [ E, F, G, H, 0 ]);
 
 let fm2operators = [E, F, G, H]
 
+let I = new Operator(audioContext);
+let J = new Operator(audioContext);
+let K = new Operator(audioContext);
+let L = new Operator(audioContext);
 
+let fm3 = new FMSynth("D-C-B-A->", [ I, J, K, L, 0 ]);
+
+let fm3operators = [I, J, K, L]
 
 
 const operatorControls = (operator, i) => {
@@ -127,10 +133,8 @@ operators.forEach(op => {
   // operator_controls.push(operatorControls(op, operators.indexOf(op)))
   operatorControls(op, operators.indexOf(op))
 
-console.log(operator_controls)
 })
 fm2operators.forEach(op => {
-  console.log(op, fm2operators.indexOf(op) + 4)
   operatorControls(op, fm2operators.indexOf(op) + 4)
 })
 // console.log(A)
@@ -140,6 +144,10 @@ E.ratio.value = 2
 E.gain.value = 0.5
 F.ratio.value = 4
 
+I.ratio = {value : 1}
+J.ratio = {value : 4}
+K.ratio = {value : 4}
+L.ratio = {value : 1}
 
 // let osc = .createOscillator()
 // osc.type = "sine"
@@ -173,8 +181,11 @@ async function createReverb(path) {
 
 let reverb = await createReverb('./assets/impulse_responses/Musikvereinsaal.wav')
 let reverb2 = await createReverb('./assets/impulse_responses/Rays.wav')
+let reverb3 = await createReverb('./assets/impulse_responses/Going Home.wav')
 
 // reverb.connect(fm1Gain)
+
+let mix = {fm : 1 , fm2 : 1, fm3 : 0.5}
 
 const masterGain = audioContext.createGain();
 masterGain.gain.value = 0.2;
@@ -197,7 +208,7 @@ const fm1Gain = audioContext.createGain()
 fm1Gain.gain.value = 1
 // filter.connect(fm1Gain)
 filter.connect(reverb)
-reverb.connect(masterGain)
+reverb.connect(fm1Gain)
 fm1Gain.connect(masterGain)
 
 const fm2Gain = audioContext.createGain()
@@ -207,8 +218,18 @@ fm2filter.connect(reverb2)
 reverb2.connect(fm2Gain)
 fm2Gain.connect(masterGain)
 
-console.log(fm2Gain)
+var fm3filter = audioContext.createBiquadFilter();
+fm3filter.frequency.value = 2000;
+fm3filter.Q.value = 10;
 
+fm3.connect(fm3filter)
+fm3.start(0)
+
+const fm3gain = audioContext.createGain()
+fm3gain.gain.value = mix.fm3
+fm3filter.connect(reverb3)
+reverb3.connect(fm3gain)
+fm3gain.connect(masterGain)
 
 
 
@@ -223,6 +244,7 @@ document.querySelector('#play').addEventListener('click', ()=>{
   if (unplayed_check) {
     fm.start(0)
     fm2.start(0)
+    fm3.start(0)
   }
   // unplayed = false
   // !played && op1.start(0)
@@ -234,8 +256,8 @@ document.querySelector('#play').addEventListener('click', ()=>{
 
 const changeAlgorithm = () => {
 
-  // fm = new FMSynth(FMSynthAlgorithms[4][algorithm], [ A, B, C, D, 0 ]);
-  fm2 = new FMSynth(FMSynthAlgorithms[4][algorithm], [ E, F, G, H, 0 ]);
+  fm = new FMSynth(FMSynthAlgorithms[4][algorithm], [ A, B, C, D, 0 ]);
+  // fm2 = new FMSynth(FMSynthAlgorithms[4][algorithm], [ E, F, G, H, 0 ]);
 
   console.log(FMSynthAlgorithms[4][algorithm])
 }
@@ -307,20 +329,26 @@ let key_value = 0
 
 // domStaver.updateStaveNotes(dom.status.notes, random_sequence, key_value)
 
+const updateKey = (key_value) => {
+  dom.status.key.innerHTML = `${key_note}${key_note.length===1?'&nbsp;':''}${major_bool?'maj':'min'}`
+  domStaver.updateSharpsAndFlats(dom.status.sharpsandflats, domStaver.findSharpsAndFlats(key_value, major_bool))
+}
+
 let maj_button = document.querySelector('button#majmin')
 maj_button.addEventListener('click', () => {
   major_bool = !major_bool
   maj_button.innerHTML = major_bool ? 'major' : 'minor'
-  dom.status.key.innerHTML = `${key_note}${key_note.length===1?'&nbsp;':''}${major_bool?'maj':'min'}`
-  domStaver.updateSharpsAndFlats(dom.status.sharpsandflats, domStaver.findSharpsAndFlats(key_value, major_bool))
+  updateKey(key_value)
 })
-document.querySelector('input#slider-key').addEventListener('input', () => {
+let key_slider = document.querySelector('input#slider-key')
+key_slider.addEventListener('input', () => {
   key_note = note_names[event.target.value]
   key_value = parseInt(event.target.value)
-  dom.status.key.innerHTML = `${key_note}${key_note.length===1?'&nbsp;':''}${major_bool?'maj':'min'}`
-  domStaver.updateSharpsAndFlats(dom.status.sharpsandflats, domStaver.findSharpsAndFlats(key_value, major_bool))
+  updateKey(key_value)
   // domStaver.updateStaveNotes(dom.status.notes, random_sequence, key_value)
 })
+key_value = key_slider.value
+updateKey(key_value)
 
 //something very annoying is happening with the sequencer and NaN -ing
 
@@ -335,24 +363,19 @@ const latSequencer = () => {
   // loop reset
   if (sequence_i === 8) {sequence_i = 0}
 
-  // if (sequence_i === 7) {}
-
   let note_index = lat_sequence[(sequence_i%key_note_sequence.length)]
 
   let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
   if (isNaN(frq)) {sequence_i++; return}
-  // console.log(note_index, key_note_sequence[note_index] + key_value, '>', frq)
+
   operators.forEach(op => {
     // op.frequency.value = frq * op.ratio.value
     op.frequency.exponentialRampToValueAtTime(frq * op.ratio.value, now + 0.2)
   })
   operators[0].gain.exponentialRampToValueAtTime((long_sequence[sequence_inf%7]/20)+0.7, now + 2 )
-  console.log(frq, (long_sequence[sequence_inf%7]/20)+0.7, long_sequence[sequence_i===7?4:sequence_i] * 10)
-  // console.log(long_sequence[sequence_i===7?4:sequence_i] * 10)
+
   operators[1].gain.exponentialRampToValueAtTime((long_sequence[sequence_i===7?4:sequence_i] * 10)+0.001, now + 2 )
-  // console.log(long_sequence)
-  // console.log(operators[2].frequency, (long_sequence[(sequence_inf+4%6)]*100)+1)
-  // operators[2].gain.exponentialRampToValueAtTime((long_sequence[(sequence_inf+4%7)]*100)+1, now + 2)
+
 
   sequence_i++
   sequence_inf++
@@ -365,7 +388,12 @@ let sequence2i = 0
 let sequence2stage = 0
 let sequence2notes2play = 0
 
+let rhythm_i = 0
+
 const longSequencer = () => {
+  // 0 1 2 3   4 5 6 7   8 9
+  if (rhythm_i === 9) {rhythm_i = 0;} else {rhythm_i++;}
+  if (rhythm_i === 2 || rhythm_i === 5 || rhythm_i === 7 || rhythm_i === 9) {return}
   // need to set envelope
   if (sequence2i === 7) { sequence2i = 0 }
 
@@ -386,6 +414,8 @@ const longSequencer = () => {
 
       let note_index = long_sequence[(sequence2i%key_note_sequence.length)]
       let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
+
+      if (isNaN(frq)) {sequence2i++; return}
       fm2operators.forEach(op => {
         // op.ratio = {value : 2}
         op.frequency.value = frq * op.ratio.value
@@ -396,9 +426,14 @@ const longSequencer = () => {
       fm2Gain.gain.exponentialRampToValueAtTime(0.001, now + 0.195);
       sequence2notes2play--
 
+      domStaver.flashNote(note_index, key_value, rhythm_i)
+
     } else {
       sequence2stage = 0
     }
+
+
+
   }
 
   sequence2i++
@@ -407,8 +442,46 @@ const longSequencer = () => {
   }
 }
 longSequencer()
-setInterval(longSequencer, 250) // change to 200 or 100 to make sound less weird, 150 to be weird
+setInterval(longSequencer, 100) // change to 200 or 100 to make sound less weird, 150 to be weird
 
+
+let sequence3_i = {inf: 0, successful: 0}
+
+fm3gain.gain.setValueAtTime(0.0001, audioContext.currentTime)
+
+const thirdSequencer = () => {
+
+  let now = audioContext.currentTime
+  // assings sequence to minor or major tones
+  if (sequence3_i.inf % 8 === 7 || sequence3_i.inf % 8 === 6) {
+    let key_note_sequence = major_bool ? major_sequence : minor_sequence
+
+    let note_index = lat_sequence[(sequence3_i.inf%key_note_sequence.length)]
+
+    let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
+    if (isNaN(frq)) {sequence3_i.inf++; return}
+    let powerer = 1
+    fm3operators.forEach(op => {
+      // op.frequency.value = frq * op.ratio.value
+      fm3gain.gain.setValueAtTime(0.0001, now)
+      fm3gain.gain.linearRampToValueAtTime(mix.fm3, now + 0.050);
+      fm3gain.gain.linearRampToValueAtTime(mix.fm3, now + 0.450);
+      fm3gain.gain.exponentialRampToValueAtTime(0.001, now + 0.495);
+      // op.frequency.exponentialRampToValueAtTime(frq * op.ratio.value, now + 0.02)
+      op.frequency.exponentialRampToValueAtTime(frq * powerer, now + 0.02)
+      powerer = powerer * 2
+      // console.log(powerer)
+
+    })
+  }
+
+  // operators[0].gain.exponentialRampToValueAtTime((long_sequence[sequence_inf%7]/20)+0.7, now + 2 )
+
+  // operators[1].gain.exponentialRampToValueAtTime((long_sequence[sequence_i===7?4:sequence_i] * 10)+0.001, now + 2 )
+  sequence3_i.inf++
+}
+thirdSequencer()
+setInterval(thirdSequencer, 500)
 
 // document.querySelector('#volume-knob').object.attachTo(op1.gain.gain)
 document.querySelector('#volume-knob').object.attachTo(masterGain.gain)
@@ -428,14 +501,10 @@ for (let i = 0; i < total_algorithms; i++) {
   child.style.display = 'inline-block'
   child.style.height = '100%';
   child.style.width = image_widths[i] / 180 * (total_width) + 'px'
-  // let widths_so_far = image_widths.slice(0,i)
-  // let width_so_far = i===0 ? 0 : widths_so_far.reduce((total, num)=>{return total + num})
-  // child.style.backgroundPosition = 0 + (width_so_far / 1.80) + '%'
 
   dom.controls.algorithm_cont.appendChild(child)
   child.style.backgroundPosition = 0 - child.offsetLeft + 'px'
   child.addEventListener('click', ()=>{
-    // console.log(total_width)
     console.log(i)
     algorithm = i
 
@@ -451,7 +520,7 @@ for (let i = 0; i < total_algorithms; i++) {
 
 
 const birdSequencer = () => {
-  console.log('birdSequencer', bird)
+  // console.log('birdSequencer', bird)
   if (bird !== undefined) {}
 }
 setInterval(birdSequencer, 1000)
