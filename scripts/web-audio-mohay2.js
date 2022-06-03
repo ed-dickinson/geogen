@@ -293,7 +293,7 @@ for (let i = 0; i < 8; i++) {
 
 let long_sequence = new Array()
 let long_decimals = long.toString().split('.')[1]
-for (let i = 0; i < 8; i++) {
+for (let i = 0; i < 7; i++) {
   long_sequence.push(parseInt(long_decimals[i]))
 }
 // console.log(long_sequence)
@@ -354,7 +354,11 @@ key_slider.addEventListener('input', () => {
 
 let sequence_inf = 0
 
+let bar = 0
+
 const latSequencer = () => {
+
+  bar = sequence_inf % 4
 
   let now = audioContext.currentTime
   // assings sequence to minor or major tones
@@ -376,9 +380,9 @@ const latSequencer = () => {
 
   operators[1].gain.exponentialRampToValueAtTime((long_sequence[sequence_i===7?4:sequence_i] * 10)+0.001, now + 2 )
 
-
   sequence_i++
   sequence_inf++
+
 }
 latSequencer()
 setInterval(latSequencer, 2000)
@@ -388,61 +392,57 @@ let sequence2i = 0
 let sequence2stage = 0
 let sequence2notes2play = 0
 
-let rhythm_i = 0
+// let rhythm_i = 0
+
+let lon_beat = [0,0,0,0,0,0,0,0,0,0]
+
+long_sequence.forEach(seq => {
+  lon_beat[seq] += 1
+})
+
 
 const longSequencer = () => {
   // 0 1 2 3   4 5 6 7   8 9
-  if (rhythm_i === 9) {rhythm_i = 0;} else {rhythm_i++;}
-  if (rhythm_i === 2 || rhythm_i === 5 || rhythm_i === 7 || rhythm_i === 9) {return}
+
+  if (bar !== 2) {return}
+
+  let rhythm_i = sequence2i % 10
+  let beat_vol = lon_beat[rhythm_i] > 2 ? 1 : lon_beat[rhythm_i] / 2
   // need to set envelope
-  if (sequence2i === 7) { sequence2i = 0 }
 
   let key_note_sequence = major_bool ? major_sequence : minor_sequence
-  if (sequence2waiter > 0) {
-    sequence2waiter--
-    return
+
+  let now = audioContext.currentTime
+
+  // let note_index = long_sequence[(sequence2i%key_note_sequence.length)]
+  let note_index = 0
+  let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
+
+  // if (isNaN(frq)) {sequence2i++; return}
+  fm2operators.forEach(op => {
+    op.frequency.value = frq * op.ratio.value
+    // op.frequency.value = Math.round(note_frqs[key_note_sequence[0] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
+  })
+  fm2Gain.gain.setValueAtTime(0, now);
+  fm2Gain.gain.linearRampToValueAtTime(mix.fm2 * beat_vol, now + 0.005);
+  fm2Gain.gain.linearRampToValueAtTime(mix.fm2 * beat_vol, now + 0.050);
+  fm2Gain.gain.linearRampToValueAtTime(0, now + 0.195);
+  sequence2notes2play--
+
+  if (beat_vol !== 0 ) {
+    domStaver.flashNote(note_index, key_value, rhythm_i)
   }
-  if (sequence2stage === 0) { // time to wait til next notes
-    sequence2waiter = Math.floor(long_sequence[sequence2i] * 1.5)
-    sequence2stage = 1
-  } else if (sequence2stage === 1) { // amount of notes to play next
-    sequence2notes2play = long_sequence[sequence2i]
-    sequence2stage = 2
-  } else { //
-    if (sequence2notes2play > 0) {
-      let now = audioContext.currentTime
-
-      let note_index = long_sequence[(sequence2i%key_note_sequence.length)]
-      let frq = Math.round(note_frqs[key_note_sequence[note_index] + key_value] * Math.pow(10,2)) / Math.pow(10,2)
-
-      if (isNaN(frq)) {sequence2i++; return}
-      fm2operators.forEach(op => {
-        // op.ratio = {value : 2}
-        op.frequency.value = frq * op.ratio.value
-      })
-      fm2Gain.gain.setValueAtTime(0.001, now);
-      fm2Gain.gain.linearRampToValueAtTime(mix.fm2, now + 0.005);
-      fm2Gain.gain.linearRampToValueAtTime(mix.fm2, now + 0.050);
-      fm2Gain.gain.exponentialRampToValueAtTime(0.001, now + 0.195);
-      sequence2notes2play--
-
-      domStaver.flashNote(note_index, key_value, rhythm_i)
-
-    } else {
-      sequence2stage = 0
-    }
 
 
 
-  }
+
+
 
   sequence2i++
-  if (Math.random() > 0.5) { // this stops the sequencer getting stuck if values lock symmetric
-    sequence2i--
-  }
+
 }
 longSequencer()
-setInterval(longSequencer, 100) // change to 200 or 100 to make sound less weird, 150 to be weird
+setInterval(longSequencer, 200) // change to 200 or 100 to make sound less weird, 150 to be weird
 
 
 let sequence3_i = {inf: 0, successful: 0}

@@ -19,7 +19,7 @@ const oscilloscoper = (context, input, canvas) => {
     frame_iterator++
     if (frame_iterator === 10) {frame_iterator = 0}
     // console.log(frame_iterator % 10)
-    if (frame_iterator % 60 !== 0) { // fps changer
+    if (frame_iterator % 10 !== 0) { // fps changer
       return
     }
     analyser.getByteTimeDomainData(dataArray);
